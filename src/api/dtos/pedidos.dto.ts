@@ -44,13 +44,13 @@ export class CriarPedidoDto {
     example: CanalPedido.APP,
     description: 'OBRIGATÓRIO. Canal de origem do pedido. Compatibilidade: CLIENTE → APP/WEB/PICKUP · TOTEM → TOTEM · ATENDENTE/GERENTE → BALCAO',
   })
-  @IsNotEmpty({ message: 'canalPedido é obrigatório' })
   @IsEnum(CanalPedido, { message: `canalPedido deve ser um de: ${listaDeValores(CanalPedido)}` })
+  @IsNotEmpty({ message: 'canalPedido é obrigatório' })
   canalPedido: CanalPedido;
 
   @ApiProperty({ enum: FormaPagamento, example: FormaPagamento.PIX })
-  @IsNotEmpty({ message: 'formaPagamento é obrigatório' })
   @IsEnum(FormaPagamento, { message: `formaPagamento deve ser um de: ${listaDeValores(FormaPagamento)}` })
+  @IsNotEmpty({ message: 'formaPagamento é obrigatório' })
   formaPagamento: FormaPagamento;
 
   @ApiProperty({ type: [ItemPedidoDto], example: [{ produtoId: 1, quantidade: 2 }, { produtoId: 9, quantidade: 1 }] })

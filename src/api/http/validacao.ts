@@ -20,7 +20,7 @@ export const pipeDeValidacao = new ValidationPipe({
   whitelist: true,
   forbidNonWhitelisted: true,
   transform: true,
-  stopAtFirstError: false,
+  stopAtFirstError: true,
   exceptionFactory: (erros) =>
     new ErroDeDominio(NaturezaErro.VALIDACAO, 'VALIDACAO', 'Um ou mais campos são inválidos.', achatar(erros).map((d) => ({
       field: d.field,

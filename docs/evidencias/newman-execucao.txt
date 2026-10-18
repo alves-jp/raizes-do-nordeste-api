@@ -4,23 +4,23 @@ Raízes do Nordeste API — Plano de Testes
 
 ❏ 00 - Autenticação
 ↳ T01 - Login válido (cliente Ana)
-  POST http://localhost:3000/auth/login [200 OK, 1.07kB, 120ms]
+  POST http://localhost:3000/auth/login [200 OK, 1.07kB, 140ms]
   ✓  T01 — 200 + accessToken
 
 ↳ Setup - Login atendente Salvador
-  POST http://localhost:3000/auth/login [200 OK, 1.07kB, 105ms]
+  POST http://localhost:3000/auth/login [200 OK, 1.07kB, 110ms]
   ✓  200 + accessToken
 
 ↳ Setup - Login cozinha Salvador
-  POST http://localhost:3000/auth/login [200 OK, 1.07kB, 106ms]
+  POST http://localhost:3000/auth/login [200 OK, 1.07kB, 96ms]
   ✓  200 + accessToken
 
 ↳ Setup - Login gerente Salvador
-  POST http://localhost:3000/auth/login [200 OK, 1.07kB, 94ms]
+  POST http://localhost:3000/auth/login [200 OK, 1.07kB, 96ms]
   ✓  200 + accessToken
 
 ↳ Setup - Login gerente Fortaleza
-  POST http://localhost:3000/auth/login [200 OK, 1.07kB, 97ms]
+  POST http://localhost:3000/auth/login [200 OK, 1.07kB, 100ms]
   ✓  200 + accessToken
 
 ↳ Setup - Login totem Salvador
@@ -28,21 +28,21 @@ Raízes do Nordeste API — Plano de Testes
   ✓  200 + accessToken
 
 ↳ Setup - Login admin (matriz)
-  POST http://localhost:3000/auth/login [200 OK, 1.07kB, 96ms]
+  POST http://localhost:3000/auth/login [200 OK, 1.07kB, 102ms]
   ✓  200 + accessToken
 
 ❏ 01 - Cardápio
 ↳ T02 - Cardápio da unidade Salvador
-  GET http://localhost:3000/unidades/1/cardapio [200 OK, 3.8kB, 8ms]
+  GET http://localhost:3000/unidades/1/cardapio [200 OK, 3.8kB, 10ms]
   ✓  T02 — 200 com disponibilidade calculada
 
 ❏ 02 - Pedidos
 ↳ T03 - Criar pedido APP com campanha
-  POST http://localhost:3000/pedidos [201 Created, 1.38kB, 25ms]
+  POST http://localhost:3000/pedidos [201 Created, 1.38kB, 42ms]
   ✓  T03 — 201 AGUARDANDO_PAGAMENTO com canalPedido e totais
 
 ↳ T04 - Reenvio com a mesma Idempotency-Key
-  POST http://localhost:3000/pedidos [200 OK, 1.4kB, 12ms]
+  POST http://localhost:3000/pedidos [200 OK, 1.4kB, 14ms]
   ✓  T04 — 200, mesmo pedido, sem duplicar
 
 ↳ T05 - Listar pedidos filtrando canalPedido=APP
@@ -51,45 +51,45 @@ Raízes do Nordeste API — Plano de Testes
 
 ❏ 03 - Pagamento (mock)
 ↳ T06 - Pagamento recusado (tok_recusado_saldo)
-  POST http://localhost:3000/pagamentos [402 Payment Required, 1.17kB, 171ms]
+  POST http://localhost:3000/pagamentos [402 Payment Required, 1.17kB, 174ms]
   ✓  T06 — 402 PAGAMENTO_RECUSADO no padrão de erro
 
 ↳ T07 - Consultar pedido após recusa
-  GET http://localhost:3000/pedidos/4 [200 OK, 1.35kB, 6ms]
+  GET http://localhost:3000/pedidos/2 [200 OK, 1.35kB, 7ms]
   ✓  T07 — 200 com status PAGAMENTO_RECUSADO
 
 ↳ T08 - Pagamento aprovado (tok_aprovado)
-  POST http://localhost:3000/pagamentos [201 Created, 1.48kB, 169ms]
+  POST http://localhost:3000/pagamentos [201 Created, 1.48kB, 175ms]
   ✓  T08 — 201 APROVADO, pedido PAGO e payload do provedor
 
 ↳ T09 - Pagar pedido já pago
-  POST http://localhost:3000/pagamentos [409 Conflict, 957B, 7ms]
+  POST http://localhost:3000/pagamentos [409 Conflict, 957B, 13ms]
   ✓  T09 — 409 PEDIDO_JA_PAGO no padrão de erro
 
 ❏ 04 - Status do pedido
 ↳ T10 - Cozinha inicia preparo (EM_PREPARO)
-  PATCH http://localhost:3000/pedidos/4/status [200 OK, 1.34kB, 9ms]
+  PATCH http://localhost:3000/pedidos/2/status [200 OK, 1.34kB, 14ms]
   ✓  T10 — 200 EM_PREPARO
 
 ↳ T11 - Transição inválida EM_PREPARO → ENTREGUE
-  PATCH http://localhost:3000/pedidos/4/status [409 Conflict, 1.08kB, 8ms]
+  PATCH http://localhost:3000/pedidos/2/status [409 Conflict, 1.08kB, 13ms]
   ✓  T11 — 409 TRANSICAO_DE_STATUS_INVALIDA no padrão de erro
 
 ↳ T12 - Cozinha finaliza (PRONTO)
-  PATCH http://localhost:3000/pedidos/4/status [200 OK, 1.34kB, 12ms]
+  PATCH http://localhost:3000/pedidos/2/status [200 OK, 1.34kB, 11ms]
   ✓  T12 — 200 PRONTO
 
 ↳ T13 - Atendente entrega (ENTREGUE)
-  PATCH http://localhost:3000/pedidos/4/status [200 OK, 1.34kB, 9ms]
+  PATCH http://localhost:3000/pedidos/2/status [200 OK, 1.34kB, 9ms]
   ✓  T13 — 200 ENTREGUE
 
 ❏ 05 - Multicanal (Balcão e Totem)
 ↳ T14 - Pedido no BALCÃO com cliente identificado
-  POST http://localhost:3000/pedidos [201 Created, 1.27kB, 13ms]
+  POST http://localhost:3000/pedidos [201 Created, 1.27kB, 14ms]
   ✓  T14 — 201 canal BALCAO, criado pelo atendente para a cliente 7
 
 ↳ T15 - Pedido no TOTEM (anônimo)
-  POST http://localhost:3000/pedidos [201 Created, 1.38kB, 17ms]
+  POST http://localhost:3000/pedidos [201 Created, 1.38kB, 19ms]
   ✓  T15 — 201 canal TOTEM
 
 ↳ T16 - Pagamento com provedor indisponível (timeout)
@@ -97,16 +97,16 @@ Raízes do Nordeste API — Plano de Testes
   ✓  T16 — 503 GATEWAY_PAGAMENTO_INDISPONIVEL no padrão de erro
 
 ↳ T17 - Cancelar pedido do totem (antes do pagamento)
-  POST http://localhost:3000/pedidos/6/cancelamento [200 OK, 1.36kB, 16ms]
+  POST http://localhost:3000/pedidos/4/cancelamento [200 OK, 1.36kB, 21ms]
   ✓  T17 — 200 CANCELADO com motivo
 
 ↳ T18 - Consolidação por canal (gerente)
-  GET http://localhost:3000/pedidos/resumo-por-canal [200 OK, 1.36kB, 4ms]
+  GET http://localhost:3000/pedidos/resumo-por-canal [200 OK, 1.36kB, 6ms]
   ✓  T18 — 200 com os 5 canais consolidados
 
 ❏ 06 - Estoque
 ↳ T19 - Entrada de estoque (gerente Salvador)
-  POST http://localhost:3000/estoque/movimentacoes [201 Created, 948B, 8ms]
+  POST http://localhost:3000/estoque/movimentacoes [201 Created, 948B, 15ms]
   ✓  T19 — 201 e saldo atualizado
 
 ↳ T20 - Gerente de Fortaleza movimentando Salvador
@@ -115,11 +115,11 @@ Raízes do Nordeste API — Plano de Testes
 
 ❏ 07 - Fidelidade e LGPD
 ↳ T21 - Saldo de pontos da cliente
-  GET http://localhost:3000/fidelidade/saldo [200 OK, 923B, 4ms]
+  GET http://localhost:3000/fidelidade/saldo [200 OK, 923B, 5ms]
   ✓  T21 — 200 participando do programa
 
 ↳ T22 - Cadastro de cliente com consentimentos
-  POST http://localhost:3000/usuarios [201 Created, 863B, 96ms]
+  POST http://localhost:3000/usuarios [201 Created, 862B, 97ms]
   ✓  T22 — 201 sem senha/hash na resposta
 
 ↳ T23 - Cadastro sem aceite dos termos
@@ -127,16 +127,16 @@ Raízes do Nordeste API — Plano de Testes
   ✓  T23 — 422 VALIDACAO no padrão de erro
 
 ↳ T24 - Listagem administrativa com dados mascarados
-  GET http://localhost:3000/usuarios?perfil=CLIENTE [200 OK, 1.55kB, 5ms]
+  GET http://localhost:3000/usuarios?perfil=CLIENTE [200 OK, 1.37kB, 5ms]
   ✓  T24 — 200 e e-mails mascarados
 
 ❏ 08 - Auditoria
 ↳ T25 - Auditoria registrou a criação do pedido
-  GET http://localhost:3000/auditoria?acao=PEDIDO_CRIADO&entidadeId=4 [200 OK, 1.14kB, 4ms]
+  GET http://localhost:3000/auditoria?acao=PEDIDO_CRIADO&entidadeId=2 [200 OK, 1.14kB, 5ms]
   ✓  T25 — 200 com registro de PEDIDO_CRIADO (autor, canal e requestId)
 
 ↳ T26 - Auditoria das mudanças de status
-  GET http://localhost:3000/auditoria?acao=PEDIDO_STATUS_ALTERADO&entidadeId=4 [200 OK, 1.64kB, 4ms]
+  GET http://localhost:3000/auditoria?acao=PEDIDO_STATUS_ALTERADO&entidadeId=2 [200 OK, 1.64kB, 5ms]
   ✓  T26 — 200 com as 3 transições (EM_PREPARO, PRONTO, ENTREGUE)
 
 ❏ 09 - Erros
@@ -149,11 +149,11 @@ Raízes do Nordeste API — Plano de Testes
   ✓  T28 — 401 TOKEN_AUSENTE no padrão de erro
 
 ↳ T29 - Cliente tentando criar produto
-  POST http://localhost:3000/produtos [403 Forbidden, 1.02kB, 4ms]
+  POST http://localhost:3000/produtos [403 Forbidden, 1.02kB, 3ms]
   ✓  T29 — 403 ACESSO_NEGADO no padrão de erro
 
 ↳ T30 - Pedido sem canalPedido
-  POST http://localhost:3000/pedidos [422 Unprocessable Entity, 1.11kB, 4ms]
+  POST http://localhost:3000/pedidos [422 Unprocessable Entity, 1.02kB, 3ms]
   ✓  T30 — 422 VALIDACAO no padrão de erro
 
 ↳ T31 - Pedido com quantidade negativa
@@ -161,23 +161,23 @@ Raízes do Nordeste API — Plano de Testes
   ✓  T31 — 422 VALIDACAO no padrão de erro
 
 ↳ T32 - Pedido com produto inexistente
-  POST http://localhost:3000/pedidos [404 Not Found, 1.02kB, 6ms]
+  POST http://localhost:3000/pedidos [404 Not Found, 1.02kB, 5ms]
   ✓  T32 — 404 PRODUTO_NAO_ENCONTRADO no padrão de erro
 
 ↳ T33 - Pedido com estoque insuficiente
-  POST http://localhost:3000/pedidos [409 Conflict, 1.08kB, 8ms]
+  POST http://localhost:3000/pedidos [409 Conflict, 1.08kB, 9ms]
   ✓  T33 — 409 ESTOQUE_INSUFICIENTE no padrão de erro
 
 ↳ T34 - Cliente usando canal BALCAO
-  POST http://localhost:3000/pedidos [422 Unprocessable Entity, 1.09kB, 5ms]
+  POST http://localhost:3000/pedidos [422 Unprocessable Entity, 1.09kB, 4ms]
   ✓  T34 — 422 CANAL_INCOMPATIVEL_COM_PERFIL no padrão de erro
 
 ↳ T35 - Produto sazonal fora de temporada (pamonha)
-  POST http://localhost:3000/pedidos [422 Unprocessable Entity, 1.07kB, 6ms]
+  POST http://localhost:3000/pedidos [422 Unprocessable Entity, 1.07kB, 5ms]
   ✓  T35 — 422 PRODUTO_FORA_DE_TEMPORADA
 
 ↳ T36 - JSON malformado
-  POST http://localhost:3000/pedidos [400 Bad Request, 420B, 2ms]
+  POST http://localhost:3000/pedidos [400 Bad Request, 420B, 3ms]
   ✓  T36 — 400 JSON_MALFORMADO no padrão de erro
 
 ┌─────────────────────────┬───────────────────┬───────────────────┐
@@ -195,7 +195,7 @@ Raízes do Nordeste API — Plano de Testes
 ├─────────────────────────┴───────────────────┴───────────────────┤
 │ total run duration: 6.4s                                        │
 ├─────────────────────────────────────────────────────────────────┤
-│ total data received: 19.3kB (approx)                            │
+│ total data received: 19.02kB (approx)                           │
 ├─────────────────────────────────────────────────────────────────┤
-│ average response time: 135ms [min: 2ms, max: 4.2s, s.d.: 639ms] │
+│ average response time: 137ms [min: 3ms, max: 4.2s, s.d.: 639ms] │
 └─────────────────────────────────────────────────────────────────┘
