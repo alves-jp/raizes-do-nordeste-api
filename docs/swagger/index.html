@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Raízes do Nordeste API — Swagger</title>
+    <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css" />
+    <style>
+      body { margin: 0; background: #fafafa; }
+      .aviso { font: 14px/1.5 system-ui, sans-serif; background: #fff4e5; border-bottom: 1px solid #f0c27b; padding: 10px 16px; }
+      .aviso code { background: #fbe3c0; padding: 1px 4px; border-radius: 3px; }
+    </style>
+  </head>
+  <body>
+    <div class="aviso">
+      Documentação pública do contrato (OpenAPI gerado do código). Para usar <b>Try it out</b>, rode a API localmente
+      (<code>npm run setup &amp;&amp; npm run start</code>) — as chamadas vão para <code>http://localhost:3000</code>.
+    </div>
+    <div id="swagger-ui"></div>
+    <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js" crossorigin></script>
+    <script>
+      window.ui = SwaggerUIBundle({
+        url: '../openapi.json',
+        dom_id: '#swagger-ui',
+        docExpansion: 'none',
+        tagsSorter: 'alpha',
+        persistAuthorization: true,
+      });
+    </script>
+  </body>
+</html>

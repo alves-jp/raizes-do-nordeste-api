@@ -1,0 +1,5198 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "description": "Retorna um access token (Bearer, validade de 1h). Após 5 falhas seguidas o e-mail fica bloqueado por 15 minutos (429).",
+        "operationId": "AuthController_login",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Autenticado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                    "tokenType": "Bearer",
+                    "expiresIn": 3600,
+                    "usuario": {
+                      "id": 7,
+                      "nome": "Ana Souza",
+                      "perfil": "CLIENTE",
+                      "unidadeId": null
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autenticado (token ausente, inválido ou expirado)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "TOKEN_AUSENTE",
+                  "message": "Envie o token de acesso no header Authorization: Bearer <token>.",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Dados inválidos ou regra de negócio violada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "VALIDACAO",
+                  "message": "Um ou mais campos são inválidos.",
+                  "details": [
+                    {
+                      "field": "canalPedido",
+                      "issue": "canalPedido deve ser um de: APP, TOTEM, BALCAO, PICKUP, WEB"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Muitas tentativas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "MUITAS_TENTATIVAS_DE_LOGIN",
+                  "message": "Muitas tentativas sem sucesso. Tente novamente em 15 minuto(s).",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Autenticar e obter token JWT",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/usuarios": {
+      "post": {
+        "description": "Cria uma conta CLIENTE. Exige aceite dos Termos/Política de Privacidade. Consentimentos de FIDELIDADE e MARKETING são opcionais, independentes e registrados com versão do termo (prova do consentimento). Não coletamos CPF, endereço ou data de nascimento.",
+        "operationId": "UsuariosController_cadastrar",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CadastroClienteDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "id": 9,
+                    "nome": "Carla Menezes",
+                    "perfil": "CLIENTE",
+                    "unidadeId": null,
+                    "criadoEm": "2026-10-17T15:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflito com o estado atual / regra de negócio",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "ESTOQUE_INSUFICIENTE",
+                  "message": "Não há quantidade suficiente em estoque para um ou mais itens.",
+                  "details": [
+                    {
+                      "field": "itens[0].quantidade",
+                      "issue": "Bolo de rolo (fatia): solicitado 10, disponível 4"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Dados inválidos ou regra de negócio violada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "VALIDACAO",
+                  "message": "Um ou mais campos são inválidos.",
+                  "details": [
+                    {
+                      "field": "canalPedido",
+                      "issue": "canalPedido deve ser um de: APP, TOTEM, BALCAO, PICKUP, WEB"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cadastro de cliente (público)",
+        "tags": [
+          "Usuários e LGPD"
+        ]
+      },
+      "get": {
+        "description": "E-mail e telefone vêm MASCARADOS (minimização). Para dados completos use GET /usuarios/{id}, que é auditado.",
+        "operationId": "UsuariosController_listar",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10,
+              "example": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "perfil",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "CLIENTE",
+                "ATENDENTE",
+                "COZINHA",
+                "GERENTE",
+                "ADMIN",
+                "TOTEM"
+              ]
+            }
+          },
+          {
+            "name": "unidadeId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "data": [
+                      {
+                        "id": 7,
+                        "nome": "Ana Souza",
+                        "perfil": "CLIENTE",
+                        "unidadeId": null,
+                        "email": "an***@email.com",
+                        "telefone": "(**) *****-1234",
+                        "ativo": true,
+                        "anonimizado": false
+                      }
+                    ],
+                    "meta": {
+                      "page": 1,
+                      "limit": 10,
+                      "total": 1,
+                      "totalPages": 1
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autenticado (token ausente, inválido ou expirado)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "TOKEN_AUSENTE",
+                  "message": "Envie o token de acesso no header Authorization: Bearer <token>.",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Autenticado, mas sem permissão (perfil ou unidade)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "ACESSO_NEGADO",
+                  "message": "Seu perfil não tem permissão para esta operação.",
+                  "details": [
+                    {
+                      "field": "perfil",
+                      "issue": "Perfis autorizados: GERENTE, ADMIN"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Dados inválidos ou regra de negócio violada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "VALIDACAO",
+                  "message": "Um ou mais campos são inválidos.",
+                  "details": [
+                    {
+                      "field": "canalPedido",
+                      "issue": "canalPedido deve ser um de: APP, TOTEM, BALCAO, PICKUP, WEB"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar usuários (ADMIN)",
+        "tags": [
+          "Usuários e LGPD"
+        ]
+      }
+    },
+    "/usuarios/funcionarios": {
+      "post": {
+        "description": "Perfis de unidade (ATENDENTE, COZINHA, GERENTE, TOTEM) exigem unidadeId.",
+        "operationId": "UsuariosController_cadastrarFuncionario",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CadastroFuncionarioDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "id": 12,
+                    "nome": "Rafael Lima",
+                    "perfil": "ATENDENTE",
+                    "unidadeId": 1,
+                    "criadoEm": "2026-10-17T15:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autenticado (token ausente, inválido ou expirado)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "TOKEN_AUSENTE",
+                  "message": "Envie o token de acesso no header Authorization: Bearer <token>.",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Autenticado, mas sem permissão (perfil ou unidade)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "ACESSO_NEGADO",
+                  "message": "Seu perfil não tem permissão para esta operação.",
+                  "details": [
+                    {
+                      "field": "perfil",
+                      "issue": "Perfis autorizados: GERENTE, ADMIN"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recurso não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "PEDIDO_NAO_ENCONTRADO",
+                  "message": "Pedido 999 não encontrado(a).",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflito com o estado atual / regra de negócio",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "ESTOQUE_INSUFICIENTE",
+                  "message": "Não há quantidade suficiente em estoque para um ou mais itens.",
+                  "details": [
+                    {
+                      "field": "itens[0].quantidade",
+                      "issue": "Bolo de rolo (fatia): solicitado 10, disponível 4"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Dados inválidos ou regra de negócio violada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "VALIDACAO",
+                  "message": "Um ou mais campos são inválidos.",
+                  "details": [
+                    {
+                      "field": "canalPedido",
+                      "issue": "canalPedido deve ser um de: APP, TOTEM, BALCAO, PICKUP, WEB"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cadastro de funcionário ou totem (ADMIN)",
+        "tags": [
+          "Usuários e LGPD"
+        ]
+      }
+    },
+    "/usuarios/me": {
+      "get": {
+        "operationId": "UsuariosController_meuPerfil",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "id": 9,
+                    "nome": "Carla Menezes",
+                    "perfil": "CLIENTE",
+                    "unidadeId": null,
+                    "criadoEm": "2026-10-17T15:00:00.000Z",
+                    "email": "carla.menezes@email.com",
+                    "telefone": null,
+                    "versaoTermosAceita": "v1.0",
+                    "consentimentos": [
+                      {
+                        "finalidade": "FIDELIDADE",
+                        "concedido": true,
+                        "versaoTermo": "v1.0",
+                        "registradoEm": "2026-10-17T15:00:00.000Z"
+                      },
+                      {
+                        "finalidade": "MARKETING",
+                        "concedido": false,
+                        "versaoTermo": "v1.0",
+                        "registradoEm": "2026-10-17T15:00:00.000Z"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autenticado (token ausente, inválido ou expirado)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "TOKEN_AUSENTE",
+                  "message": "Envie o token de acesso no header Authorization: Bearer <token>.",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Meu perfil (com consentimentos vigentes)",
+        "tags": [
+          "Usuários e LGPD"
+        ]
+      },
+      "delete": {
+        "description": "Apaga nome, e-mail e telefone de forma irreversível e revoga consentimentos. Pedidos são mantidos sem identificação (obrigação fiscal). O token deixa de valer.",
+        "operationId": "UsuariosController_anonimizar",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": "Conta anonimizada"
+          },
+          "401": {
+            "description": "Não autenticado (token ausente, inválido ou expirado)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "TOKEN_AUSENTE",
+                  "message": "Envie o token de acesso no header Authorization: Bearer <token>.",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Autenticado, mas sem permissão (perfil ou unidade)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "ACESSO_NEGADO",
+                  "message": "Seu perfil não tem permissão para esta operação.",
+                  "details": [
+                    {
+                      "field": "perfil",
+                      "issue": "Perfis autorizados: GERENTE, ADMIN"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflito com o estado atual / regra de negócio",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "ESTOQUE_INSUFICIENTE",
+                  "message": "Não há quantidade suficiente em estoque para um ou mais itens.",
+                  "details": [
+                    {
+                      "field": "itens[0].quantidade",
+                      "issue": "Bolo de rolo (fatia): solicitado 10, disponível 4"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Excluir minha conta (anonimização — LGPD art. 18, VI)",
+        "tags": [
+          "Usuários e LGPD"
+        ]
+      }
+    },
+    "/usuarios/me/consentimentos": {
+      "get": {
+        "operationId": "UsuariosController_historicoConsentimentos",
+        "parameters": [],
+        "responses": {
+          "401": {
+            "description": "Não autenticado (token ausente, inválido ou expirado)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "TOKEN_AUSENTE",
+                  "message": "Envie o token de acesso no header Authorization: Bearer <token>.",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Autenticado, mas sem permissão (perfil ou unidade)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "ACESSO_NEGADO",
+                  "message": "Seu perfil não tem permissão para esta operação.",
+                  "details": [
+                    {
+                      "field": "perfil",
+                      "issue": "Perfis autorizados: GERENTE, ADMIN"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Histórico completo dos meus consentimentos (concessões e revogações)",
+        "tags": [
+          "Usuários e LGPD"
+        ]
+      }
+    },
+    "/usuarios/me/consentimentos/{finalidade}": {
+      "put": {
+        "description": "Revogar FIDELIDADE interrompe o acúmulo de pontos; o histórico é preservado.",
+        "operationId": "UsuariosController_registrarConsentimento",
+        "parameters": [
+          {
+            "name": "finalidade",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "enum": [
+                "FIDELIDADE",
+                "MARKETING"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConsentimentoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "401": {
+            "description": "Não autenticado (token ausente, inválido ou expirado)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "TOKEN_AUSENTE",
+                  "message": "Envie o token de acesso no header Authorization: Bearer <token>.",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Autenticado, mas sem permissão (perfil ou unidade)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "ACESSO_NEGADO",
+                  "message": "Seu perfil não tem permissão para esta operação.",
+                  "details": [
+                    {
+                      "field": "perfil",
+                      "issue": "Perfis autorizados: GERENTE, ADMIN"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Dados inválidos ou regra de negócio violada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "VALIDACAO",
+                  "message": "Um ou mais campos são inválidos.",
+                  "details": [
+                    {
+                      "field": "canalPedido",
+                      "issue": "canalPedido deve ser um de: APP, TOTEM, BALCAO, PICKUP, WEB"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Conceder ou revogar um consentimento",
+        "tags": [
+          "Usuários e LGPD"
+        ]
+      }
+    },
+    "/usuarios/me/dados": {
+      "get": {
+        "description": "Retorna cadastro, consentimentos, pedidos e extrato de pontos em JSON. A exportação é auditada.",
+        "operationId": "UsuariosController_exportar",
+        "parameters": [],
+        "responses": {
+          "401": {
+            "description": "Não autenticado (token ausente, inválido ou expirado)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "TOKEN_AUSENTE",
+                  "message": "Envie o token de acesso no header Authorization: Bearer <token>.",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Autenticado, mas sem permissão (perfil ou unidade)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "ACESSO_NEGADO",
+                  "message": "Seu perfil não tem permissão para esta operação.",
+                  "details": [
+                    {
+                      "field": "perfil",
+                      "issue": "Perfis autorizados: GERENTE, ADMIN"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Exportar meus dados (LGPD art. 18 — acesso e portabilidade)",
+        "tags": [
+          "Usuários e LGPD"
+        ]
+      }
+    },
+    "/usuarios/{id}": {
+      "get": {
+        "operationId": "UsuariosController_obter",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Requisição malformada (JSON inválido, parâmetro de rota inválido)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "PARAMETRO_INVALIDO",
+                  "message": "O parâmetro de rota \"id\" deve ser um inteiro positivo.",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autenticado (token ausente, inválido ou expirado)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "TOKEN_AUSENTE",
+                  "message": "Envie o token de acesso no header Authorization: Bearer <token>.",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Autenticado, mas sem permissão (perfil ou unidade)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "ACESSO_NEGADO",
+                  "message": "Seu perfil não tem permissão para esta operação.",
+                  "details": [
+                    {
+                      "field": "perfil",
+                      "issue": "Perfis autorizados: GERENTE, ADMIN"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recurso não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "PEDIDO_NAO_ENCONTRADO",
+                  "message": "Pedido 999 não encontrado(a).",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Dados pessoais completos de um usuário (ADMIN, auditado)",
+        "tags": [
+          "Usuários e LGPD"
+        ]
+      }
+    },
+    "/unidades": {
+      "get": {
+        "operationId": "UnidadesController_listar",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10,
+              "example": 10,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "data": [
+                      {
+                        "id": 1,
+                        "nome": "Raízes do Nordeste — Salvador (Rio Vermelho)",
+                        "cidade": "Salvador",
+                        "uf": "BA",
+                        "tipo": "PROPRIA",
+                        "horarioFuncionamento": "07:00-22:00",
+                        "ativa": true
+                      }
+                    ],
+                    "meta": {
+                      "page": 1,
+                      "limit": 10,
+                      "total": 3,
+                      "totalPages": 1
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Dados inválidos ou regra de negócio violada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "VALIDACAO",
+                  "message": "Um ou mais campos são inválidos.",
+                  "details": [
+                    {
+                      "field": "canalPedido",
+                      "issue": "canalPedido deve ser um de: APP, TOTEM, BALCAO, PICKUP, WEB"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar unidades da rede",
+        "tags": [
+          "Unidades e Cardápio"
+        ]
+      }
+    },
+    "/unidades/{id}": {
+      "get": {
+        "operationId": "UnidadesController_obter",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "id": 1,
+                    "nome": "Raízes do Nordeste — Salvador (Rio Vermelho)",
+                    "cidade": "Salvador",
+                    "uf": "BA",
+                    "tipo": "PROPRIA",
+                    "horarioFuncionamento": "07:00-22:00",
+                    "ativa": true
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requisição malformada (JSON inválido, parâmetro de rota inválido)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "PARAMETRO_INVALIDO",
+                  "message": "O parâmetro de rota \"id\" deve ser um inteiro positivo.",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recurso não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "PEDIDO_NAO_ENCONTRADO",
+                  "message": "Pedido 999 não encontrado(a).",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Detalhar unidade",
+        "tags": [
+          "Unidades e Cardápio"
+        ]
+      }
+    },
+    "/unidades/{id}/cardapio": {
+      "get": {
+        "description": "Preço local e disponibilidade em tempo real. Um item aparece indisponível quando: pausado pela unidade, produto inativo, fora de temporada (itens sazonais/juninos) ou sem estoque — o motivo vem em motivoIndisponibilidade.",
+        "operationId": "UnidadesController_cardapio",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10,
+              "example": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "categoria",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "TAPIOCAS",
+                "CUSCUZ",
+                "PRATOS",
+                "SALGADOS",
+                "DOCES",
+                "BEBIDAS"
+              ]
+            }
+          },
+          {
+            "name": "somenteDisponiveis",
+            "required": false,
+            "in": "query",
+            "description": "true lista apenas itens disponíveis agora",
+            "schema": {
+              "example": false,
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "unidade": {
+                      "id": 1,
+                      "nome": "Raízes do Nordeste — Salvador (Rio Vermelho)",
+                      "cidade": "Salvador",
+                      "uf": "BA"
+                    },
+                    "data": [
+                      {
+                        "produtoId": 1,
+                        "nome": "Tapioca de carne de sol com queijo coalho",
+                        "descricao": "...",
+                        "categoria": "TAPIOCAS",
+                        "preco": 24.9,
+                        "sazonal": false,
+                        "disponivel": true,
+                        "motivoIndisponibilidade": null
+                      },
+                      {
+                        "produtoId": 12,
+                        "nome": "Pamonha doce",
+                        "descricao": "...",
+                        "categoria": "DOCES",
+                        "preco": 9.5,
+                        "sazonal": true,
+                        "disponivel": false,
+                        "motivoIndisponibilidade": "FORA_DE_TEMPORADA"
+                      }
+                    ],
+                    "meta": {
+                      "page": 1,
+                      "limit": 50,
+                      "total": 2,
+                      "totalPages": 1
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requisição malformada (JSON inválido, parâmetro de rota inválido)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "PARAMETRO_INVALIDO",
+                  "message": "O parâmetro de rota \"id\" deve ser um inteiro positivo.",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recurso não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "PEDIDO_NAO_ENCONTRADO",
+                  "message": "Pedido 999 não encontrado(a).",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Dados inválidos ou regra de negócio violada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "VALIDACAO",
+                  "message": "Um ou mais campos são inválidos.",
+                  "details": [
+                    {
+                      "field": "canalPedido",
+                      "issue": "canalPedido deve ser um de: APP, TOTEM, BALCAO, PICKUP, WEB"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cardápio da unidade (App, Totem, Web e Balcão)",
+        "tags": [
+          "Unidades e Cardápio"
+        ]
+      }
+    },
+    "/unidades/{id}/cardapio/{produtoId}": {
+      "put": {
+        "description": "Define preço local e pausa/reativa o item. Operação idempotente e auditada.",
+        "operationId": "UnidadesController_definirItem",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "produtoId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ItemCardapioDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "unidadeId": 1,
+                    "produtoId": 1,
+                    "nome": "Tapioca de carne de sol com queijo coalho",
+                    "preco": 25.9,
+                    "disponivel": true
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requisição malformada (JSON inválido, parâmetro de rota inválido)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "PARAMETRO_INVALIDO",
+                  "message": "O parâmetro de rota \"id\" deve ser um inteiro positivo.",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autenticado (token ausente, inválido ou expirado)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "TOKEN_AUSENTE",
+                  "message": "Envie o token de acesso no header Authorization: Bearer <token>.",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Autenticado, mas sem permissão (perfil ou unidade)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "ACESSO_NEGADO",
+                  "message": "Seu perfil não tem permissão para esta operação.",
+                  "details": [
+                    {
+                      "field": "perfil",
+                      "issue": "Perfis autorizados: GERENTE, ADMIN"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recurso não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "PEDIDO_NAO_ENCONTRADO",
+                  "message": "Pedido 999 não encontrado(a).",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Dados inválidos ou regra de negócio violada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "VALIDACAO",
+                  "message": "Um ou mais campos são inválidos.",
+                  "details": [
+                    {
+                      "field": "canalPedido",
+                      "issue": "canalPedido deve ser um de: APP, TOTEM, BALCAO, PICKUP, WEB"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Incluir/atualizar item no cardápio da unidade (GERENTE da unidade ou ADMIN)",
+        "tags": [
+          "Unidades e Cardápio"
+        ]
+      }
+    },
+    "/produtos": {
+      "get": {
+        "operationId": "ProdutosController_listar",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10,
+              "example": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "categoria",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "TAPIOCAS",
+                "CUSCUZ",
+                "PRATOS",
+                "SALGADOS",
+                "DOCES",
+                "BEBIDAS"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "422": {
+            "description": "Dados inválidos ou regra de negócio violada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "VALIDACAO",
+                  "message": "Um ou mais campos são inválidos.",
+                  "details": [
+                    {
+                      "field": "canalPedido",
+                      "issue": "canalPedido deve ser um de: APP, TOTEM, BALCAO, PICKUP, WEB"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Catálogo central da rede (todos os produtos)",
+        "tags": [
+          "Produtos"
+        ]
+      },
+      "post": {
+        "operationId": "ProdutosController_criar",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CriarProdutoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "id": 16,
+                    "nome": "Escondidinho de charque",
+                    "descricao": "...",
+                    "categoria": "PRATOS",
+                    "sazonal": false,
+                    "mesInicio": null,
+                    "mesFim": null,
+                    "ativo": true
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autenticado (token ausente, inválido ou expirado)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "TOKEN_AUSENTE",
+                  "message": "Envie o token de acesso no header Authorization: Bearer <token>.",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Autenticado, mas sem permissão (perfil ou unidade)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "ACESSO_NEGADO",
+                  "message": "Seu perfil não tem permissão para esta operação.",
+                  "details": [
+                    {
+                      "field": "perfil",
+                      "issue": "Perfis autorizados: GERENTE, ADMIN"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflito com o estado atual / regra de negócio",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "ESTOQUE_INSUFICIENTE",
+                  "message": "Não há quantidade suficiente em estoque para um ou mais itens.",
+                  "details": [
+                    {
+                      "field": "itens[0].quantidade",
+                      "issue": "Bolo de rolo (fatia): solicitado 10, disponível 4"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Dados inválidos ou regra de negócio violada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "VALIDACAO",
+                  "message": "Um ou mais campos são inválidos.",
+                  "details": [
+                    {
+                      "field": "canalPedido",
+                      "issue": "canalPedido deve ser um de: APP, TOTEM, BALCAO, PICKUP, WEB"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Criar produto no catálogo central (ADMIN/matriz)",
+        "tags": [
+          "Produtos"
+        ]
+      }
+    },
+    "/produtos/{id}": {
+      "get": {
+        "operationId": "ProdutosController_obter",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Requisição malformada (JSON inválido, parâmetro de rota inválido)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "PARAMETRO_INVALIDO",
+                  "message": "O parâmetro de rota \"id\" deve ser um inteiro positivo.",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recurso não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "PEDIDO_NAO_ENCONTRADO",
+                  "message": "Pedido 999 não encontrado(a).",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Detalhar produto",
+        "tags": [
+          "Produtos"
+        ]
+      },
+      "patch": {
+        "operationId": "ProdutosController_atualizar",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AtualizarProdutoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "400": {
+            "description": "Requisição malformada (JSON inválido, parâmetro de rota inválido)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "PARAMETRO_INVALIDO",
+                  "message": "O parâmetro de rota \"id\" deve ser um inteiro positivo.",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autenticado (token ausente, inválido ou expirado)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "TOKEN_AUSENTE",
+                  "message": "Envie o token de acesso no header Authorization: Bearer <token>.",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Autenticado, mas sem permissão (perfil ou unidade)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "ACESSO_NEGADO",
+                  "message": "Seu perfil não tem permissão para esta operação.",
+                  "details": [
+                    {
+                      "field": "perfil",
+                      "issue": "Perfis autorizados: GERENTE, ADMIN"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recurso não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "PEDIDO_NAO_ENCONTRADO",
+                  "message": "Pedido 999 não encontrado(a).",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflito com o estado atual / regra de negócio",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "ESTOQUE_INSUFICIENTE",
+                  "message": "Não há quantidade suficiente em estoque para um ou mais itens.",
+                  "details": [
+                    {
+                      "field": "itens[0].quantidade",
+                      "issue": "Bolo de rolo (fatia): solicitado 10, disponível 4"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Dados inválidos ou regra de negócio violada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "VALIDACAO",
+                  "message": "Um ou mais campos são inválidos.",
+                  "details": [
+                    {
+                      "field": "canalPedido",
+                      "issue": "canalPedido deve ser um de: APP, TOTEM, BALCAO, PICKUP, WEB"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Atualizar produto (ADMIN/matriz)",
+        "tags": [
+          "Produtos"
+        ]
+      }
+    },
+    "/estoque": {
+      "get": {
+        "description": "Funcionários veem apenas a própria unidade; ADMIN vê qualquer uma.",
+        "operationId": "EstoqueController_saldo",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10,
+              "example": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "unidadeId",
+            "required": true,
+            "in": "query",
+            "description": "Unidade a consultar",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "somenteBaixo",
+            "required": false,
+            "in": "query",
+            "description": "true lista só itens no estoque mínimo ou abaixo",
+            "schema": {
+              "example": false,
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "data": [
+                      {
+                        "produtoId": 6,
+                        "produto": "Bolo de rolo (fatia)",
+                        "quantidade": 4,
+                        "estoqueMinimo": 5,
+                        "estoqueBaixo": true,
+                        "atualizadoEm": "2026-10-17T15:00:00.000Z"
+                      }
+                    ],
+                    "meta": {
+                      "page": 1,
+                      "limit": 10,
+                      "total": 1,
+                      "totalPages": 1
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autenticado (token ausente, inválido ou expirado)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "TOKEN_AUSENTE",
+                  "message": "Envie o token de acesso no header Authorization: Bearer <token>.",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Autenticado, mas sem permissão (perfil ou unidade)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "ACESSO_NEGADO",
+                  "message": "Seu perfil não tem permissão para esta operação.",
+                  "details": [
+                    {
+                      "field": "perfil",
+                      "issue": "Perfis autorizados: GERENTE, ADMIN"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recurso não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "PEDIDO_NAO_ENCONTRADO",
+                  "message": "Pedido 999 não encontrado(a).",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Dados inválidos ou regra de negócio violada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "VALIDACAO",
+                  "message": "Um ou mais campos são inválidos.",
+                  "details": [
+                    {
+                      "field": "canalPedido",
+                      "issue": "canalPedido deve ser um de: APP, TOTEM, BALCAO, PICKUP, WEB"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Saldo de estoque por unidade",
+        "tags": [
+          "Estoque"
+        ]
+      }
+    },
+    "/estoque/movimentacoes": {
+      "post": {
+        "description": "ENTRADA = recebimento; SAIDA = perda/descarte (exige motivo). Saída maior que o saldo → 409. Toda movimentação é auditada.",
+        "operationId": "EstoqueController_movimentar",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MovimentacaoEstoqueDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "movimentacaoId": 31,
+                    "unidadeId": 1,
+                    "produtoId": 6,
+                    "produto": "Bolo de rolo (fatia)",
+                    "tipo": "ENTRADA",
+                    "quantidade": 20,
+                    "saldoAtual": 24,
+                    "motivo": "Recebimento do fornecedor — NF 4512",
+                    "criadoEm": "2026-10-17T15:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autenticado (token ausente, inválido ou expirado)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "TOKEN_AUSENTE",
+                  "message": "Envie o token de acesso no header Authorization: Bearer <token>.",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Autenticado, mas sem permissão (perfil ou unidade)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "ACESSO_NEGADO",
+                  "message": "Seu perfil não tem permissão para esta operação.",
+                  "details": [
+                    {
+                      "field": "perfil",
+                      "issue": "Perfis autorizados: GERENTE, ADMIN"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recurso não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "PEDIDO_NAO_ENCONTRADO",
+                  "message": "Pedido 999 não encontrado(a).",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflito com o estado atual / regra de negócio",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "ESTOQUE_INSUFICIENTE",
+                  "message": "Não há quantidade suficiente em estoque para um ou mais itens.",
+                  "details": [
+                    {
+                      "field": "itens[0].quantidade",
+                      "issue": "Bolo de rolo (fatia): solicitado 10, disponível 4"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Dados inválidos ou regra de negócio violada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "VALIDACAO",
+                  "message": "Um ou mais campos são inválidos.",
+                  "details": [
+                    {
+                      "field": "canalPedido",
+                      "issue": "canalPedido deve ser um de: APP, TOTEM, BALCAO, PICKUP, WEB"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Registrar entrada ou saída manual de estoque (GERENTE da unidade ou ADMIN)",
+        "tags": [
+          "Estoque"
+        ]
+      },
+      "get": {
+        "operationId": "EstoqueController_movimentacoes",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10,
+              "example": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "unidadeId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "produtoId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 6,
+              "type": "number"
+            }
+          },
+          {
+            "name": "tipo",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ENTRADA",
+                "SAIDA",
+                "RESERVA_PEDIDO",
+                "ESTORNO_PEDIDO"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "Não autenticado (token ausente, inválido ou expirado)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "TOKEN_AUSENTE",
+                  "message": "Envie o token de acesso no header Authorization: Bearer <token>.",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Autenticado, mas sem permissão (perfil ou unidade)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "ACESSO_NEGADO",
+                  "message": "Seu perfil não tem permissão para esta operação.",
+                  "details": [
+                    {
+                      "field": "perfil",
+                      "issue": "Perfis autorizados: GERENTE, ADMIN"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Dados inválidos ou regra de negócio violada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "VALIDACAO",
+                  "message": "Um ou mais campos são inválidos.",
+                  "details": [
+                    {
+                      "field": "canalPedido",
+                      "issue": "canalPedido deve ser um de: APP, TOTEM, BALCAO, PICKUP, WEB"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Histórico de movimentações da unidade (entradas, saídas, reservas e estornos de pedidos)",
+        "tags": [
+          "Estoque"
+        ]
+      }
+    },
+    "/pedidos": {
+      "post": {
+        "description": "canalPedido é OBRIGATÓRIO e deve ser compatível com o perfil (CLIENTE: APP/WEB/PICKUP · TOTEM: TOTEM · ATENDENTE/GERENTE: BALCAO). Valida cardápio da unidade e temporada, calcula subtotal, aplica campanha e resgate de pontos e BAIXA O ESTOQUE na mesma transação. O pedido nasce AGUARDANDO_PAGAMENTO; o próximo passo é POST /pagamentos.",
+        "operationId": "PedidosController_criar",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Opcional. Reenviar a mesma chave devolve o recurso já criado (200 + header Idempotent-Replayed: true) em vez de duplicar.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "3f1c2a9e-7b4d-4c1a-9e2f-0a1b2c3d4e5f"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CriarPedidoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Reenvio com a mesma Idempotency-Key (pedido já existente)"
+          },
+          "201": {
+            "description": "Pedido criado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "id": 1,
+                    "unidadeId": 1,
+                    "clienteId": 7,
+                    "criadoPorId": 7,
+                    "canalPedido": "APP",
+                    "status": "AGUARDANDO_PAGAMENTO",
+                    "formaPagamento": "PIX",
+                    "itens": [
+                      {
+                        "produtoId": 1,
+                        "nome": "Tapioca de carne de sol com queijo coalho",
+                        "quantidade": 2,
+                        "precoUnitario": 24.9,
+                        "subtotal": 49.8
+                      },
+                      {
+                        "produtoId": 9,
+                        "nome": "Suco de cajá (500 ml)",
+                        "quantidade": 1,
+                        "precoUnitario": 10,
+                        "subtotal": 10
+                      }
+                    ],
+                    "subtotal": 59.8,
+                    "descontoCampanha": 5.98,
+                    "descontoPontos": 0,
+                    "total": 53.82,
+                    "codigoCampanha": "APPRAIZ10",
+                    "pontosResgatados": 0,
+                    "observacao": null,
+                    "motivoCancelamento": null,
+                    "criadoEm": "2026-10-17T15:00:00.000Z",
+                    "atualizadoEm": "2026-10-17T15:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requisição malformada (JSON inválido, parâmetro de rota inválido)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "PARAMETRO_INVALIDO",
+                  "message": "O parâmetro de rota \"id\" deve ser um inteiro positivo.",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autenticado (token ausente, inválido ou expirado)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "TOKEN_AUSENTE",
+                  "message": "Envie o token de acesso no header Authorization: Bearer <token>.",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Autenticado, mas sem permissão (perfil ou unidade)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "ACESSO_NEGADO",
+                  "message": "Seu perfil não tem permissão para esta operação.",
+                  "details": [
+                    {
+                      "field": "perfil",
+                      "issue": "Perfis autorizados: GERENTE, ADMIN"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recurso não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "PEDIDO_NAO_ENCONTRADO",
+                  "message": "Pedido 999 não encontrado(a).",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflito com o estado atual / regra de negócio",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "ESTOQUE_INSUFICIENTE",
+                  "message": "Não há quantidade suficiente em estoque para um ou mais itens.",
+                  "details": [
+                    {
+                      "field": "itens[0].quantidade",
+                      "issue": "Bolo de rolo (fatia): solicitado 10, disponível 4"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Dados inválidos ou regra de negócio violada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "VALIDACAO",
+                  "message": "Um ou mais campos são inválidos.",
+                  "details": [
+                    {
+                      "field": "canalPedido",
+                      "issue": "canalPedido deve ser um de: APP, TOTEM, BALCAO, PICKUP, WEB"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Criar pedido (fluxo crítico)",
+        "tags": [
+          "Pedidos"
+        ]
+      },
+      "get": {
+        "description": "Escopo automático: CLIENTE vê os próprios pedidos; equipe e totem veem a própria unidade; ADMIN vê a rede. Ex.: GET /pedidos?canalPedido=TOTEM&status=PAGO",
+        "operationId": "PedidosController_listar",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10,
+              "example": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "canalPedido",
+            "required": false,
+            "in": "query",
+            "description": "Filtra por canal de origem",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "APP",
+                "TOTEM",
+                "BALCAO",
+                "PICKUP",
+                "WEB"
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "AGUARDANDO_PAGAMENTO",
+                "PAGAMENTO_RECUSADO",
+                "PAGO",
+                "EM_PREPARO",
+                "PRONTO",
+                "ENTREGUE",
+                "CANCELADO"
+              ]
+            }
+          },
+          {
+            "name": "unidadeId",
+            "required": false,
+            "in": "query",
+            "description": "Somente ADMIN pode consultar outras unidades",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "dataInicio",
+            "required": false,
+            "in": "query",
+            "description": "Data inicial (ISO 8601)",
+            "schema": {
+              "format": "date-time",
+              "example": "2026-10-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "dataFim",
+            "required": false,
+            "in": "query",
+            "description": "Data final (ISO 8601)",
+            "schema": {
+              "format": "date-time",
+              "example": "2026-10-31T23:59:59",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "data": [
+                      {
+                        "id": 1,
+                        "unidadeId": 1,
+                        "clienteId": 7,
+                        "canalPedido": "APP",
+                        "status": "PAGO",
+                        "total": 53.82,
+                        "quantidadeItens": 3,
+                        "criadoEm": "2026-10-17T15:00:00.000Z"
+                      }
+                    ],
+                    "meta": {
+                      "page": 1,
+                      "limit": 10,
+                      "total": 1,
+                      "totalPages": 1
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autenticado (token ausente, inválido ou expirado)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "TOKEN_AUSENTE",
+                  "message": "Envie o token de acesso no header Authorization: Bearer <token>.",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Autenticado, mas sem permissão (perfil ou unidade)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "ACESSO_NEGADO",
+                  "message": "Seu perfil não tem permissão para esta operação.",
+                  "details": [
+                    {
+                      "field": "perfil",
+                      "issue": "Perfis autorizados: GERENTE, ADMIN"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Dados inválidos ou regra de negócio violada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "VALIDACAO",
+                  "message": "Um ou mais campos são inválidos.",
+                  "details": [
+                    {
+                      "field": "canalPedido",
+                      "issue": "canalPedido deve ser um de: APP, TOTEM, BALCAO, PICKUP, WEB"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar pedidos com filtros (canalPedido, status, unidade, período)",
+        "tags": [
+          "Pedidos"
+        ]
+      }
+    },
+    "/pedidos/resumo-por-canal": {
+      "get": {
+        "description": "Quantidade de pedidos, pagos, cancelados, faturamento e ticket médio de cada canal.",
+        "operationId": "PedidosController_resumoPorCanal",
+        "parameters": [
+          {
+            "name": "unidadeId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "dataInicio",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "example": "2026-10-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "dataFim",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "date-time",
+              "example": "2026-10-31T23:59:59",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "unidadeId": 1,
+                    "periodo": {
+                      "inicio": null,
+                      "fim": null
+                    },
+                    "canais": [
+                      {
+                        "canalPedido": "APP",
+                        "pedidos": 12,
+                        "pedidosPagos": 10,
+                        "pedidosCancelados": 1,
+                        "faturamento": 512.4,
+                        "ticketMedio": 51.24
+                      },
+                      {
+                        "canalPedido": "TOTEM",
+                        "pedidos": 8,
+                        "pedidosPagos": 8,
+                        "pedidosCancelados": 0,
+                        "faturamento": 301.6,
+                        "ticketMedio": 37.7
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autenticado (token ausente, inválido ou expirado)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "TOKEN_AUSENTE",
+                  "message": "Envie o token de acesso no header Authorization: Bearer <token>.",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Autenticado, mas sem permissão (perfil ou unidade)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "ACESSO_NEGADO",
+                  "message": "Seu perfil não tem permissão para esta operação.",
+                  "details": [
+                    {
+                      "field": "perfil",
+                      "issue": "Perfis autorizados: GERENTE, ADMIN"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Dados inválidos ou regra de negócio violada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "VALIDACAO",
+                  "message": "Um ou mais campos são inválidos.",
+                  "details": [
+                    {
+                      "field": "canalPedido",
+                      "issue": "canalPedido deve ser um de: APP, TOTEM, BALCAO, PICKUP, WEB"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Consolidação por canal (GERENTE da unidade ou ADMIN da rede)",
+        "tags": [
+          "Pedidos"
+        ]
+      }
+    },
+    "/pedidos/{id}": {
+      "get": {
+        "description": "Pedido de outro cliente responde 404 (não revela que o ID existe); de outra unidade responde 403.",
+        "operationId": "PedidosController_obter",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "id": 1,
+                    "unidadeId": 1,
+                    "clienteId": 7,
+                    "criadoPorId": 7,
+                    "canalPedido": "APP",
+                    "status": "AGUARDANDO_PAGAMENTO",
+                    "formaPagamento": "PIX",
+                    "itens": [
+                      {
+                        "produtoId": 1,
+                        "nome": "Tapioca de carne de sol com queijo coalho",
+                        "quantidade": 2,
+                        "precoUnitario": 24.9,
+                        "subtotal": 49.8
+                      },
+                      {
+                        "produtoId": 9,
+                        "nome": "Suco de cajá (500 ml)",
+                        "quantidade": 1,
+                        "precoUnitario": 10,
+                        "subtotal": 10
+                      }
+                    ],
+                    "subtotal": 59.8,
+                    "descontoCampanha": 5.98,
+                    "descontoPontos": 0,
+                    "total": 53.82,
+                    "codigoCampanha": "APPRAIZ10",
+                    "pontosResgatados": 0,
+                    "observacao": null,
+                    "motivoCancelamento": null,
+                    "criadoEm": "2026-10-17T15:00:00.000Z",
+                    "atualizadoEm": "2026-10-17T15:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requisição malformada (JSON inválido, parâmetro de rota inválido)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "PARAMETRO_INVALIDO",
+                  "message": "O parâmetro de rota \"id\" deve ser um inteiro positivo.",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autenticado (token ausente, inválido ou expirado)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "TOKEN_AUSENTE",
+                  "message": "Envie o token de acesso no header Authorization: Bearer <token>.",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Autenticado, mas sem permissão (perfil ou unidade)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "ACESSO_NEGADO",
+                  "message": "Seu perfil não tem permissão para esta operação.",
+                  "details": [
+                    {
+                      "field": "perfil",
+                      "issue": "Perfis autorizados: GERENTE, ADMIN"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recurso não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "PEDIDO_NAO_ENCONTRADO",
+                  "message": "Pedido 999 não encontrado(a).",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Detalhar pedido",
+        "tags": [
+          "Pedidos"
+        ]
+      }
+    },
+    "/pedidos/{id}/status": {
+      "patch": {
+        "description": "PAGO → EM_PREPARO e EM_PREPARO → PRONTO: COZINHA/GERENTE/ADMIN. PRONTO → ENTREGUE: ATENDENTE/GERENTE/ADMIN. Transição inválida → 409. Auditado.",
+        "operationId": "PedidosController_atualizarStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AtualizarStatusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "id": 1,
+                    "unidadeId": 1,
+                    "clienteId": 7,
+                    "criadoPorId": 7,
+                    "canalPedido": "APP",
+                    "status": "EM_PREPARO",
+                    "formaPagamento": "PIX",
+                    "itens": [
+                      {
+                        "produtoId": 1,
+                        "nome": "Tapioca de carne de sol com queijo coalho",
+                        "quantidade": 2,
+                        "precoUnitario": 24.9,
+                        "subtotal": 49.8
+                      },
+                      {
+                        "produtoId": 9,
+                        "nome": "Suco de cajá (500 ml)",
+                        "quantidade": 1,
+                        "precoUnitario": 10,
+                        "subtotal": 10
+                      }
+                    ],
+                    "subtotal": 59.8,
+                    "descontoCampanha": 5.98,
+                    "descontoPontos": 0,
+                    "total": 53.82,
+                    "codigoCampanha": "APPRAIZ10",
+                    "pontosResgatados": 0,
+                    "observacao": null,
+                    "motivoCancelamento": null,
+                    "criadoEm": "2026-10-17T15:00:00.000Z",
+                    "atualizadoEm": "2026-10-17T15:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requisição malformada (JSON inválido, parâmetro de rota inválido)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "PARAMETRO_INVALIDO",
+                  "message": "O parâmetro de rota \"id\" deve ser um inteiro positivo.",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autenticado (token ausente, inválido ou expirado)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "TOKEN_AUSENTE",
+                  "message": "Envie o token de acesso no header Authorization: Bearer <token>.",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Autenticado, mas sem permissão (perfil ou unidade)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "ACESSO_NEGADO",
+                  "message": "Seu perfil não tem permissão para esta operação.",
+                  "details": [
+                    {
+                      "field": "perfil",
+                      "issue": "Perfis autorizados: GERENTE, ADMIN"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recurso não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "PEDIDO_NAO_ENCONTRADO",
+                  "message": "Pedido 999 não encontrado(a).",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflito com o estado atual / regra de negócio",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "ESTOQUE_INSUFICIENTE",
+                  "message": "Não há quantidade suficiente em estoque para um ou mais itens.",
+                  "details": [
+                    {
+                      "field": "itens[0].quantidade",
+                      "issue": "Bolo de rolo (fatia): solicitado 10, disponível 4"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Dados inválidos ou regra de negócio violada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "VALIDACAO",
+                  "message": "Um ou mais campos são inválidos.",
+                  "details": [
+                    {
+                      "field": "canalPedido",
+                      "issue": "canalPedido deve ser um de: APP, TOTEM, BALCAO, PICKUP, WEB"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Atualizar status operacional (cozinha → pronto → entregue)",
+        "tags": [
+          "Pedidos"
+        ]
+      }
+    },
+    "/pedidos/{id}/cancelamento": {
+      "post": {
+        "description": "CLIENTE/TOTEM: antes do pagamento. ATENDENTE: até PAGO. GERENTE/ADMIN: até PRONTO. Se já pago, estorna no provedor, devolve o estoque e desfaz pontos. Motivo obrigatório; auditado.",
+        "operationId": "PedidosController_cancelar",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelarPedidoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "id": 1,
+                    "unidadeId": 1,
+                    "clienteId": 7,
+                    "criadoPorId": 7,
+                    "canalPedido": "APP",
+                    "status": "CANCELADO",
+                    "formaPagamento": "PIX",
+                    "itens": [
+                      {
+                        "produtoId": 1,
+                        "nome": "Tapioca de carne de sol com queijo coalho",
+                        "quantidade": 2,
+                        "precoUnitario": 24.9,
+                        "subtotal": 49.8
+                      },
+                      {
+                        "produtoId": 9,
+                        "nome": "Suco de cajá (500 ml)",
+                        "quantidade": 1,
+                        "precoUnitario": 10,
+                        "subtotal": 10
+                      }
+                    ],
+                    "subtotal": 59.8,
+                    "descontoCampanha": 5.98,
+                    "descontoPontos": 0,
+                    "total": 53.82,
+                    "codigoCampanha": "APPRAIZ10",
+                    "pontosResgatados": 0,
+                    "observacao": null,
+                    "motivoCancelamento": "Cliente desistiu da compra",
+                    "criadoEm": "2026-10-17T15:00:00.000Z",
+                    "atualizadoEm": "2026-10-17T15:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requisição malformada (JSON inválido, parâmetro de rota inválido)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "PARAMETRO_INVALIDO",
+                  "message": "O parâmetro de rota \"id\" deve ser um inteiro positivo.",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autenticado (token ausente, inválido ou expirado)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "TOKEN_AUSENTE",
+                  "message": "Envie o token de acesso no header Authorization: Bearer <token>.",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Autenticado, mas sem permissão (perfil ou unidade)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "ACESSO_NEGADO",
+                  "message": "Seu perfil não tem permissão para esta operação.",
+                  "details": [
+                    {
+                      "field": "perfil",
+                      "issue": "Perfis autorizados: GERENTE, ADMIN"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recurso não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "PEDIDO_NAO_ENCONTRADO",
+                  "message": "Pedido 999 não encontrado(a).",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflito com o estado atual / regra de negócio",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "ESTOQUE_INSUFICIENTE",
+                  "message": "Não há quantidade suficiente em estoque para um ou mais itens.",
+                  "details": [
+                    {
+                      "field": "itens[0].quantidade",
+                      "issue": "Bolo de rolo (fatia): solicitado 10, disponível 4"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Dados inválidos ou regra de negócio violada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "VALIDACAO",
+                  "message": "Um ou mais campos são inválidos.",
+                  "details": [
+                    {
+                      "field": "canalPedido",
+                      "issue": "canalPedido deve ser um de: APP, TOTEM, BALCAO, PICKUP, WEB"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Provedor externo indisponível",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "GATEWAY_PAGAMENTO_INDISPONIVEL",
+                  "message": "O provedor de pagamento não respondeu. Nada foi cobrado; tente novamente em instantes.",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cancelar pedido (com estorno e devolução de estoque)",
+        "tags": [
+          "Pedidos"
+        ]
+      }
+    },
+    "/pedidos/{id}/pagamentos": {
+      "get": {
+        "operationId": "PedidosController_pagamentosDoPedido",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Requisição malformada (JSON inválido, parâmetro de rota inválido)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "PARAMETRO_INVALIDO",
+                  "message": "O parâmetro de rota \"id\" deve ser um inteiro positivo.",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autenticado (token ausente, inválido ou expirado)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "TOKEN_AUSENTE",
+                  "message": "Envie o token de acesso no header Authorization: Bearer <token>.",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Autenticado, mas sem permissão (perfil ou unidade)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "ACESSO_NEGADO",
+                  "message": "Seu perfil não tem permissão para esta operação.",
+                  "details": [
+                    {
+                      "field": "perfil",
+                      "issue": "Perfis autorizados: GERENTE, ADMIN"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recurso não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "PEDIDO_NAO_ENCONTRADO",
+                  "message": "Pedido 999 não encontrado(a).",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tentativas de pagamento do pedido (histórico)",
+        "tags": [
+          "Pedidos"
+        ]
+      }
+    },
+    "/pagamentos": {
+      "post": {
+        "description": "Envia a cobrança ao RaizesPay Sandbox e devolve o retorno (status + payload do provedor). APROVADO → 201 e pedido PAGO (+ pontos de fidelidade). RECUSADO → 402 e pedido PAGAMENTO_RECUSADO (pode tentar de novo). Provedor sem resposta (timeout, já com 1 nova tentativa automática) → 503 e pedido inalterado. Tokens de teste: tok_aprovado, tok_recusado_saldo, tok_recusado_antifraude, tok_gateway_instavel, tok_gateway_indisponivel.",
+        "operationId": "PagamentosController_solicitar",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Recomendado. Reenviar a mesma chave não cobra de novo: devolve o resultado original (200 + Idempotent-Replayed: true).",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "pag-7b4d-4c1a-9e2f"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SolicitarPagamentoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Pagamento aprovado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "pagamento": {
+                      "id": 1,
+                      "pedidoId": 1,
+                      "valor": 53.82,
+                      "forma": "PIX",
+                      "status": "APROVADO",
+                      "transacaoExternaId": "rpay_tx_4f9c0a1b2c3d4e5f6a7b",
+                      "codigoRetorno": "APROVADO",
+                      "mensagemRetorno": "Pagamento aprovado.",
+                      "respostaGateway": {
+                        "id": "rpay_tx_4f9c0a1b2c3d4e5f6a7b",
+                        "provider": "raizespay-sandbox",
+                        "reference": "pedido-1-pagamento-1",
+                        "amount": 5382,
+                        "currency": "BRL",
+                        "payment_method": "pix",
+                        "status": "approved",
+                        "authorization_code": "482913",
+                        "decline_code": null,
+                        "created_at": "2026-10-17T15:00:01.000Z"
+                      },
+                      "criadoEm": "2026-10-17T15:00:01.000Z",
+                      "atualizadoEm": "2026-10-17T15:00:01.000Z"
+                    },
+                    "pedido": {
+                      "id": 1,
+                      "status": "PAGO",
+                      "total": 53.82
+                    },
+                    "pontosCreditados": 26
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requisição malformada (JSON inválido, parâmetro de rota inválido)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "PARAMETRO_INVALIDO",
+                  "message": "O parâmetro de rota \"id\" deve ser um inteiro positivo.",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autenticado (token ausente, inválido ou expirado)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "TOKEN_AUSENTE",
+                  "message": "Envie o token de acesso no header Authorization: Bearer <token>.",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "Pagamento recusado pelo provedor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "PAGAMENTO_RECUSADO",
+                  "message": "Pagamento recusado pelo provedor: Saldo ou limite insuficiente. Tente outro meio de pagamento.",
+                  "details": [
+                    {
+                      "field": "pagamentoId",
+                      "issue": "7"
+                    },
+                    {
+                      "field": "codigoRetorno",
+                      "issue": "SALDO_INSUFICIENTE"
+                    },
+                    {
+                      "field": "pedido.status",
+                      "issue": "PAGAMENTO_RECUSADO"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Autenticado, mas sem permissão (perfil ou unidade)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "ACESSO_NEGADO",
+                  "message": "Seu perfil não tem permissão para esta operação.",
+                  "details": [
+                    {
+                      "field": "perfil",
+                      "issue": "Perfis autorizados: GERENTE, ADMIN"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recurso não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "PEDIDO_NAO_ENCONTRADO",
+                  "message": "Pedido 999 não encontrado(a).",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflito com o estado atual / regra de negócio",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "ESTOQUE_INSUFICIENTE",
+                  "message": "Não há quantidade suficiente em estoque para um ou mais itens.",
+                  "details": [
+                    {
+                      "field": "itens[0].quantidade",
+                      "issue": "Bolo de rolo (fatia): solicitado 10, disponível 4"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Dados inválidos ou regra de negócio violada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "VALIDACAO",
+                  "message": "Um ou mais campos são inválidos.",
+                  "details": [
+                    {
+                      "field": "canalPedido",
+                      "issue": "canalPedido deve ser um de: APP, TOTEM, BALCAO, PICKUP, WEB"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Provedor externo indisponível",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "GATEWAY_PAGAMENTO_INDISPONIVEL",
+                  "message": "O provedor de pagamento não respondeu. Nada foi cobrado; tente novamente em instantes.",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Solicitar pagamento do pedido ao provedor externo (simulado)",
+        "tags": [
+          "Pagamentos (mock)"
+        ]
+      }
+    },
+    "/pagamentos/{id}": {
+      "get": {
+        "operationId": "PagamentosController_obter",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Requisição malformada (JSON inválido, parâmetro de rota inválido)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "PARAMETRO_INVALIDO",
+                  "message": "O parâmetro de rota \"id\" deve ser um inteiro positivo.",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autenticado (token ausente, inválido ou expirado)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "TOKEN_AUSENTE",
+                  "message": "Envie o token de acesso no header Authorization: Bearer <token>.",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Autenticado, mas sem permissão (perfil ou unidade)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "ACESSO_NEGADO",
+                  "message": "Seu perfil não tem permissão para esta operação.",
+                  "details": [
+                    {
+                      "field": "perfil",
+                      "issue": "Perfis autorizados: GERENTE, ADMIN"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recurso não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "PEDIDO_NAO_ENCONTRADO",
+                  "message": "Pedido 999 não encontrado(a).",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Consultar tentativa de pagamento",
+        "tags": [
+          "Pagamentos (mock)"
+        ]
+      }
+    },
+    "/fidelidade/saldo": {
+      "get": {
+        "operationId": "FidelidadeController_saldo",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "saldo": 186,
+                    "saldoEmReais": 18.6,
+                    "participando": true,
+                    "regras": {
+                      "pontosPorReal": "1 ponto a cada R$ 2.00",
+                      "valorDoPonto": 0.1,
+                      "resgateMinimo": 50,
+                      "descontoMaximoPercentual": 30
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autenticado (token ausente, inválido ou expirado)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "TOKEN_AUSENTE",
+                  "message": "Envie o token de acesso no header Authorization: Bearer <token>.",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Autenticado, mas sem permissão (perfil ou unidade)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "ACESSO_NEGADO",
+                  "message": "Seu perfil não tem permissão para esta operação.",
+                  "details": [
+                    {
+                      "field": "perfil",
+                      "issue": "Perfis autorizados: GERENTE, ADMIN"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Saldo de pontos e regras do programa \"Cliente Raiz\"",
+        "tags": [
+          "Fidelidade"
+        ]
+      }
+    },
+    "/fidelidade/extrato": {
+      "get": {
+        "operationId": "FidelidadeController_extrato",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10,
+              "example": 10,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "Não autenticado (token ausente, inválido ou expirado)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "TOKEN_AUSENTE",
+                  "message": "Envie o token de acesso no header Authorization: Bearer <token>.",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Autenticado, mas sem permissão (perfil ou unidade)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "ACESSO_NEGADO",
+                  "message": "Seu perfil não tem permissão para esta operação.",
+                  "details": [
+                    {
+                      "field": "perfil",
+                      "issue": "Perfis autorizados: GERENTE, ADMIN"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Dados inválidos ou regra de negócio violada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "VALIDACAO",
+                  "message": "Um ou mais campos são inválidos.",
+                  "details": [
+                    {
+                      "field": "canalPedido",
+                      "issue": "canalPedido deve ser um de: APP, TOTEM, BALCAO, PICKUP, WEB"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Extrato de pontos (acúmulos, resgates e estornos)",
+        "tags": [
+          "Fidelidade"
+        ]
+      }
+    },
+    "/campanhas": {
+      "get": {
+        "operationId": "CampanhasController_listar",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10,
+              "example": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "unidadeId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "canalPedido",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "APP",
+                "TOTEM",
+                "BALCAO",
+                "PICKUP",
+                "WEB"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "422": {
+            "description": "Dados inválidos ou regra de negócio violada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "VALIDACAO",
+                  "message": "Um ou mais campos são inválidos.",
+                  "details": [
+                    {
+                      "field": "canalPedido",
+                      "issue": "canalPedido deve ser um de: APP, TOTEM, BALCAO, PICKUP, WEB"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Campanhas vigentes (filtráveis por unidade e canal)",
+        "tags": [
+          "Campanhas"
+        ]
+      },
+      "post": {
+        "description": "Desconto percentual por código, com vigência, valor mínimo e restrição opcional por unidade e/ou canal (ex.: só APP).",
+        "operationId": "CampanhasController_criar",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CriarCampanhaDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "id": 3,
+                    "codigo": "SAOJOAO15",
+                    "descricao": "15% de desconto no arraiá da rede",
+                    "percentualDesconto": 15,
+                    "inicio": "2026-11-01T03:00:00.000Z",
+                    "fim": "2027-01-01T02:59:59.000Z",
+                    "unidadeId": null,
+                    "canalPedido": null,
+                    "valorMinimo": 30,
+                    "ativa": true
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autenticado (token ausente, inválido ou expirado)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "TOKEN_AUSENTE",
+                  "message": "Envie o token de acesso no header Authorization: Bearer <token>.",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Autenticado, mas sem permissão (perfil ou unidade)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "ACESSO_NEGADO",
+                  "message": "Seu perfil não tem permissão para esta operação.",
+                  "details": [
+                    {
+                      "field": "perfil",
+                      "issue": "Perfis autorizados: GERENTE, ADMIN"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recurso não encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "PEDIDO_NAO_ENCONTRADO",
+                  "message": "Pedido 999 não encontrado(a).",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflito com o estado atual / regra de negócio",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "ESTOQUE_INSUFICIENTE",
+                  "message": "Não há quantidade suficiente em estoque para um ou mais itens.",
+                  "details": [
+                    {
+                      "field": "itens[0].quantidade",
+                      "issue": "Bolo de rolo (fatia): solicitado 10, disponível 4"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Dados inválidos ou regra de negócio violada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "VALIDACAO",
+                  "message": "Um ou mais campos são inválidos.",
+                  "details": [
+                    {
+                      "field": "canalPedido",
+                      "issue": "canalPedido deve ser um de: APP, TOTEM, BALCAO, PICKUP, WEB"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Criar campanha promocional (ADMIN/matriz)",
+        "tags": [
+          "Campanhas"
+        ]
+      }
+    },
+    "/auditoria": {
+      "get": {
+        "description": "ADMIN vê a rede inteira; GERENTE vê só a própria unidade. Ex.: ?acao=PEDIDO_CRIADO&entidadeId=1",
+        "operationId": "AuditoriaController_listar",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10,
+              "example": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "acao",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "LOGIN_SUCESSO",
+                "LOGIN_FALHA",
+                "USUARIO_CADASTRADO",
+                "FUNCIONARIO_CADASTRADO",
+                "CONSENTIMENTO_ALTERADO",
+                "DADOS_PESSOAIS_ACESSADOS",
+                "DADOS_PESSOAIS_EXPORTADOS",
+                "USUARIO_ANONIMIZADO",
+                "PRODUTO_CRIADO",
+                "PRODUTO_ATUALIZADO",
+                "CARDAPIO_ATUALIZADO",
+                "ESTOQUE_MOVIMENTADO",
+                "CAMPANHA_CRIADA",
+                "PEDIDO_CRIADO",
+                "PEDIDO_STATUS_ALTERADO",
+                "PEDIDO_CANCELADO",
+                "PAGAMENTO_APROVADO",
+                "PAGAMENTO_RECUSADO",
+                "PAGAMENTO_FALHA_COMUNICACAO",
+                "PAGAMENTO_ESTORNADO"
+              ]
+            }
+          },
+          {
+            "name": "entidade",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "Pedido",
+              "type": "string"
+            }
+          },
+          {
+            "name": "entidadeId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "usuarioId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 2,
+              "type": "number"
+            }
+          },
+          {
+            "name": "unidadeId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "data": [
+                      {
+                        "id": 40,
+                        "acao": "PEDIDO_STATUS_ALTERADO",
+                        "entidade": "Pedido",
+                        "entidadeId": 1,
+                        "usuarioId": 4,
+                        "perfil": "COZINHA",
+                        "unidadeId": 1,
+                        "detalhes": {
+                          "de": "PAGO",
+                          "para": "EM_PREPARO"
+                        },
+                        "ip": "::1",
+                        "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b",
+                        "criadoEm": "2026-10-17T15:05:00.000Z"
+                      }
+                    ],
+                    "meta": {
+                      "page": 1,
+                      "limit": 10,
+                      "total": 1,
+                      "totalPages": 1
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autenticado (token ausente, inválido ou expirado)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "TOKEN_AUSENTE",
+                  "message": "Envie o token de acesso no header Authorization: Bearer <token>.",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Autenticado, mas sem permissão (perfil ou unidade)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "ACESSO_NEGADO",
+                  "message": "Seu perfil não tem permissão para esta operação.",
+                  "details": [
+                    {
+                      "field": "perfil",
+                      "issue": "Perfis autorizados: GERENTE, ADMIN"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Dados inválidos ou regra de negócio violada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "VALIDACAO",
+                  "message": "Um ou mais campos são inválidos.",
+                  "details": [
+                    {
+                      "field": "canalPedido",
+                      "issue": "canalPedido deve ser um de: APP, TOTEM, BALCAO, PICKUP, WEB"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Trilha de auditoria de ações sensíveis",
+        "tags": [
+          "Auditoria"
+        ]
+      }
+    },
+    "/health": {
+      "get": {
+        "operationId": "SaudeController_saude",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "status": "ok",
+                    "banco": "ok",
+                    "versao": "1.0.0",
+                    "uptimeSegundos": 42
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Verificação de saúde (API e banco)",
+        "tags": [
+          "Saúde"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Raízes do Nordeste API",
+    "description": "\nAPI Back-end da **Rede Raízes do Nordeste** — plataforma única de pedidos para os canais **APP, TOTEM, BALCÃO, PICKUP e WEB**,\ncom cardápio e estoque por unidade, pagamento via provedor externo (simulado), programa de fidelidade \"Cliente Raiz\" e controles de LGPD.\n\n### Como autenticar\n1. `POST /auth/login` com um dos usuários de teste abaixo.\n2. Clique em **Authorize** e cole o `accessToken`.\n\n| Perfil | E-mail | Senha |\n|---|---|---|\n| ADMIN (matriz) | admin@raizesdonordeste.com.br | Raizes@2026 |\n| GERENTE — Salvador | gerente.salvador@raizesdonordeste.com.br | Raizes@2026 |\n| ATENDENTE — Salvador | atendente.salvador@raizesdonordeste.com.br | Raizes@2026 |\n| COZINHA — Salvador | cozinha.salvador@raizesdonordeste.com.br | Raizes@2026 |\n| TOTEM — Salvador | totem01.salvador@raizesdonordeste.com.br | Raizes@2026 |\n| GERENTE — Recife | gerente.recife@raizesdonordeste.com.br | Raizes@2026 |\n| CLIENTE (participa da fidelidade) | ana.souza@email.com | Raizes@2026 |\n| CLIENTE (não participa) | bruno.costa@email.com | Raizes@2026 |\n\n### Fluxo crítico\n`POST /pedidos` → `POST /pagamentos` → `PATCH /pedidos/{id}/status` (EM_PREPARO → PRONTO → ENTREGUE)\n\n### Padrão de erro (todas as rotas)\n```json\n{ \"error\": \"CODIGO\", \"message\": \"Mensagem legível\", \"details\": [{ \"field\": \"campo\", \"issue\": \"problema\" }],\n  \"timestamp\": \"2026-10-17T15:04:05.000Z\", \"path\": \"/rota\", \"requestId\": \"uuid\" }\n```\n400 malformado · 401 sem token · 402 pagamento recusado · 403 sem permissão · 404 não encontrado · 409 conflito/regra · 422 validação · 429 limite · 503 provedor indisponível\n",
+    "version": "1.0.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Local"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      }
+    },
+    "schemas": {
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "ana.souza@email.com"
+          },
+          "senha": {
+            "type": "string",
+            "example": "Raizes@2026"
+          }
+        },
+        "required": [
+          "email",
+          "senha"
+        ]
+      },
+      "DetalheErroDto": {
+        "type": "object",
+        "properties": {
+          "field": {
+            "type": "string",
+            "example": "itens[0].quantidade"
+          },
+          "issue": {
+            "type": "string",
+            "example": "Disponível: 1"
+          }
+        },
+        "required": [
+          "field",
+          "issue"
+        ]
+      },
+      "ErroPadraoDto": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "ESTOQUE_INSUFICIENTE",
+            "description": "Código estável, legível por máquina"
+          },
+          "message": {
+            "type": "string",
+            "example": "Não há quantidade suficiente em estoque para um ou mais itens."
+          },
+          "details": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetalheErroDto"
+            }
+          },
+          "timestamp": {
+            "type": "string",
+            "example": "2026-10-17T15:04:05.000Z"
+          },
+          "path": {
+            "type": "string",
+            "example": "/pedidos"
+          },
+          "requestId": {
+            "type": "object",
+            "example": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b",
+            "nullable": true
+          }
+        },
+        "required": [
+          "error",
+          "message",
+          "details",
+          "timestamp",
+          "path",
+          "requestId"
+        ]
+      },
+      "ConsentimentosCadastroDto": {
+        "type": "object",
+        "properties": {
+          "fidelidade": {
+            "type": "boolean",
+            "example": true,
+            "description": "Participar do programa de fidelidade (acúmulo e resgate de pontos)"
+          },
+          "marketing": {
+            "type": "boolean",
+            "example": false,
+            "description": "Receber ofertas e campanhas personalizadas"
+          }
+        }
+      },
+      "CadastroClienteDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "example": "Carla Menezes"
+          },
+          "email": {
+            "type": "string",
+            "example": "carla.menezes@email.com"
+          },
+          "senha": {
+            "type": "string",
+            "example": "Cuscuz2026",
+            "description": "senha deve ter de 8 a 72 caracteres, com pelo menos uma letra e um número"
+          },
+          "telefone": {
+            "type": "string",
+            "example": "(71) 98888-7777",
+            "description": "Opcional — usado apenas para avisar que o pedido está pronto"
+          },
+          "aceiteTermos": {
+            "type": "boolean",
+            "example": true,
+            "description": "Aceite obrigatório dos Termos de Uso e da Política de Privacidade (v1.0)"
+          },
+          "consentimentos": {
+            "description": "Consentimentos opcionais e independentes (padrão: false)",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ConsentimentosCadastroDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "nome",
+          "email",
+          "senha",
+          "aceiteTermos"
+        ]
+      },
+      "CadastroFuncionarioDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "example": "Rafael Lima"
+          },
+          "email": {
+            "type": "string",
+            "example": "rafael.lima@raizesdonordeste.com.br"
+          },
+          "senha": {
+            "type": "string",
+            "example": "Baiao2026"
+          },
+          "perfil": {
+            "type": "string",
+            "enum": [
+              "CLIENTE",
+              "ATENDENTE",
+              "COZINHA",
+              "GERENTE",
+              "ADMIN",
+              "TOTEM"
+            ],
+            "example": "ATENDENTE"
+          },
+          "unidadeId": {
+            "type": "number",
+            "example": 1,
+            "description": "Obrigatório para ATENDENTE, COZINHA, GERENTE e TOTEM"
+          }
+        },
+        "required": [
+          "nome",
+          "email",
+          "senha",
+          "perfil"
+        ]
+      },
+      "ConsentimentoDto": {
+        "type": "object",
+        "properties": {
+          "concedido": {
+            "type": "boolean",
+            "example": true,
+            "description": "true concede, false revoga"
+          }
+        },
+        "required": [
+          "concedido"
+        ]
+      },
+      "ItemCardapioDto": {
+        "type": "object",
+        "properties": {
+          "preco": {
+            "type": "number",
+            "example": 24.9,
+            "description": "Preço nesta unidade, em reais (máx. 2 casas decimais)"
+          },
+          "disponivel": {
+            "type": "boolean",
+            "example": true,
+            "description": "false pausa o item no cardápio desta unidade"
+          }
+        },
+        "required": [
+          "preco"
+        ]
+      },
+      "CriarProdutoDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "example": "Escondidinho de charque"
+          },
+          "descricao": {
+            "type": "string",
+            "example": "Purê de macaxeira gratinado com charque desfiada."
+          },
+          "categoria": {
+            "type": "string",
+            "enum": [
+              "TAPIOCAS",
+              "CUSCUZ",
+              "PRATOS",
+              "SALGADOS",
+              "DOCES",
+              "BEBIDAS"
+            ],
+            "example": "PRATOS"
+          },
+          "sazonal": {
+            "type": "boolean",
+            "example": false,
+            "description": "Produto regional/sazonal (ex.: itens juninos)"
+          },
+          "mesInicio": {
+            "type": "number",
+            "example": 6,
+            "minimum": 1,
+            "maximum": 12
+          },
+          "mesFim": {
+            "type": "number",
+            "example": 7,
+            "minimum": 1,
+            "maximum": 12
+          },
+          "ativo": {
+            "type": "boolean",
+            "example": true
+          }
+        },
+        "required": [
+          "nome",
+          "categoria"
+        ]
+      },
+      "AtualizarProdutoDto": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string",
+            "example": "Escondidinho de charque"
+          },
+          "descricao": {
+            "type": "string",
+            "example": "Purê de macaxeira gratinado com charque desfiada."
+          },
+          "categoria": {
+            "type": "string",
+            "enum": [
+              "TAPIOCAS",
+              "CUSCUZ",
+              "PRATOS",
+              "SALGADOS",
+              "DOCES",
+              "BEBIDAS"
+            ],
+            "example": "PRATOS"
+          },
+          "sazonal": {
+            "type": "boolean",
+            "example": false,
+            "description": "Produto regional/sazonal (ex.: itens juninos)"
+          },
+          "mesInicio": {
+            "type": "number",
+            "example": 6,
+            "minimum": 1,
+            "maximum": 12
+          },
+          "mesFim": {
+            "type": "number",
+            "example": 7,
+            "minimum": 1,
+            "maximum": 12
+          },
+          "ativo": {
+            "type": "boolean",
+            "example": true
+          }
+        }
+      },
+      "MovimentacaoEstoqueDto": {
+        "type": "object",
+        "properties": {
+          "unidadeId": {
+            "type": "number",
+            "example": 1
+          },
+          "produtoId": {
+            "type": "number",
+            "example": 6
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "ENTRADA",
+              "SAIDA"
+            ],
+            "example": "ENTRADA"
+          },
+          "quantidade": {
+            "type": "number",
+            "example": 20,
+            "minimum": 1,
+            "maximum": 10000
+          },
+          "motivo": {
+            "type": "string",
+            "example": "Recebimento do fornecedor — NF 4512",
+            "description": "Obrigatório para SAIDA"
+          }
+        },
+        "required": [
+          "unidadeId",
+          "produtoId",
+          "tipo",
+          "quantidade"
+        ]
+      },
+      "ItemPedidoDto": {
+        "type": "object",
+        "properties": {
+          "produtoId": {
+            "type": "number",
+            "example": 1
+          },
+          "quantidade": {
+            "type": "number",
+            "example": 2,
+            "minimum": 1,
+            "maximum": 20
+          }
+        },
+        "required": [
+          "produtoId",
+          "quantidade"
+        ]
+      },
+      "CriarPedidoDto": {
+        "type": "object",
+        "properties": {
+          "unidadeId": {
+            "type": "number",
+            "example": 1
+          },
+          "canalPedido": {
+            "type": "string",
+            "enum": [
+              "APP",
+              "TOTEM",
+              "BALCAO",
+              "PICKUP",
+              "WEB"
+            ],
+            "example": "APP",
+            "description": "OBRIGATÓRIO. Canal de origem do pedido. Compatibilidade: CLIENTE → APP/WEB/PICKUP · TOTEM → TOTEM · ATENDENTE/GERENTE → BALCAO"
+          },
+          "formaPagamento": {
+            "type": "string",
+            "enum": [
+              "PIX",
+              "CARTAO_CREDITO",
+              "CARTAO_DEBITO"
+            ],
+            "example": "PIX"
+          },
+          "itens": {
+            "example": [
+              {
+                "produtoId": 1,
+                "quantidade": 2
+              },
+              {
+                "produtoId": 9,
+                "quantidade": 1
+              }
+            ],
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ItemPedidoDto"
+            }
+          },
+          "clienteId": {
+            "type": "number",
+            "example": 7,
+            "description": "Atendente/totem: identifica o cliente para pontuar na fidelidade. Cliente logado: ignorado (usa o próprio id)."
+          },
+          "codigoCampanha": {
+            "type": "string",
+            "example": "APPRAIZ10",
+            "description": "Código de campanha promocional"
+          },
+          "pontosResgate": {
+            "type": "number",
+            "example": 50,
+            "description": "Pontos de fidelidade a resgatar (mín. 50; 1 ponto = R$ 0,10; até 30% do pedido)"
+          },
+          "observacao": {
+            "type": "string",
+            "example": "Tapioca sem queijo, por favor"
+          }
+        },
+        "required": [
+          "unidadeId",
+          "canalPedido",
+          "formaPagamento",
+          "itens"
+        ]
+      },
+      "AtualizarStatusDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "EM_PREPARO",
+              "PRONTO",
+              "ENTREGUE"
+            ],
+            "example": "EM_PREPARO",
+            "description": "PAGO → EM_PREPARO (cozinha) → PRONTO (cozinha) → ENTREGUE (atendente). PAGO é definido pelo pagamento; cancelamento tem rota própria."
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "CancelarPedidoDto": {
+        "type": "object",
+        "properties": {
+          "motivo": {
+            "type": "string",
+            "example": "Cliente desistiu da compra"
+          }
+        },
+        "required": [
+          "motivo"
+        ]
+      },
+      "SolicitarPagamentoDto": {
+        "type": "object",
+        "properties": {
+          "pedidoId": {
+            "type": "number",
+            "example": 1
+          },
+          "formaPagamento": {
+            "type": "string",
+            "enum": [
+              "PIX",
+              "CARTAO_CREDITO",
+              "CARTAO_DEBITO"
+            ],
+            "description": "Opcional: troca a forma escolhida no pedido (ex.: após recusa no cartão, pagar com PIX)"
+          },
+          "tokenPagamento": {
+            "type": "string",
+            "example": "tok_aprovado",
+            "enum": [
+              "tok_aprovado",
+              "tok_recusado_saldo",
+              "tok_recusado_antifraude",
+              "tok_gateway_instavel",
+              "tok_gateway_indisponivel"
+            ],
+            "description": "Token gerado pelo SDK do provedor no App/Totem/Web (o back-end nunca recebe dados de cartão). No sandbox define o resultado: tok_aprovado (padrão), tok_recusado_saldo, tok_recusado_antifraude, tok_gateway_instavel, tok_gateway_indisponivel."
+          }
+        },
+        "required": [
+          "pedidoId"
+        ]
+      },
+      "CriarCampanhaDto": {
+        "type": "object",
+        "properties": {
+          "codigo": {
+            "type": "string",
+            "example": "SAOJOAO15",
+            "description": "Código que o cliente digita (letras e números, será convertido para maiúsculas)"
+          },
+          "descricao": {
+            "type": "string",
+            "example": "15% de desconto no arraiá da rede"
+          },
+          "percentualDesconto": {
+            "type": "number",
+            "example": 15,
+            "minimum": 1,
+            "maximum": 50
+          },
+          "inicio": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-11-01T00:00:00-03:00"
+          },
+          "fim": {
+            "format": "date-time",
+            "type": "string",
+            "example": "2026-12-31T23:59:59-03:00"
+          },
+          "unidadeId": {
+            "type": "number",
+            "example": null,
+            "nullable": true,
+            "description": "Restringe a uma unidade (nulo = rede toda)"
+          },
+          "canalPedido": {
+            "type": "string",
+            "enum": [
+              "APP",
+              "TOTEM",
+              "BALCAO",
+              "PICKUP",
+              "WEB"
+            ],
+            "nullable": true,
+            "description": "Restringe a um canal (nulo = todos)"
+          },
+          "valorMinimo": {
+            "type": "number",
+            "example": 30,
+            "description": "Valor mínimo do pedido em reais"
+          }
+        },
+        "required": [
+          "codigo",
+          "descricao",
+          "percentualDesconto",
+          "inicio",
+          "fim"
+        ]
+      }
+    }
+  }
+}

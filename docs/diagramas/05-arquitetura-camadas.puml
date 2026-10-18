@@ -1,0 +1,36 @@
+@startuml 05-arquitetura-camadas
+' Arquitetura em camadas da API — as dependências apontam para baixo / para dentro
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam ArrowColor #5A3E2B
+skinparam rectangle {
+  BorderColor #5A3E2B
+  FontColor #2B1D14
+}
+skinparam actor {
+  BorderColor #7A1F2B
+  BackgroundColor #FFF3D6
+}
+
+actor "Clientes da API\nApp · Totem · Web · Balcão" as Clientes
+
+rectangle "**API (Interface)** — src/api\n\nControllers REST: /auth /usuarios /unidades /produtos /estoque\n/pedidos /pagamentos /fidelidade /campanhas /auditoria /health\nAutenticacaoGuard (JWT + perfis) · DTOs + ValidationPipe (422)\nFiltroDeErros (JSON padrão) · ContextoMiddleware (requestId) · Swagger (/docs)" as API #FFF3E0
+
+rectangle "**Application (Casos de uso)** — src/application\n\nPedidosService · PagamentosService (+ timeout/retry) · EstoqueService\nFidelidadeService · UsuariosService (LGPD) · CatalogoService\nCampanhasService · AuthService · AuditoriaService\nPorta: GatewayDePagamento (interface)" as APP #FFF8EC
+
+rectangle "**Domain (Regras de negócio puras)** — src/domain\n\nMáquina de status do pedido · Canal × perfil (multicanalidade)\nCálculo do pedido · Regras de fidelidade e campanhas\nSazonalidade · Mascaramento LGPD · Enums · ErroDeDominio\n(sem dependência de framework, HTTP ou banco)" as DOM #FFFDF8
+
+rectangle "**Infrastructure (Detalhes técnicos)** — src/infrastructure\n\nEntidades TypeORM · Migrations · Seed · UnidadeDeTrabalho (transações)\nGatewayDePagamentoMock (RaizesPay Sandbox) · Hash bcrypt\nLimitador de login · Contexto da requisição · Configuração (.env)" as INF #F7EFE6
+
+database "SQLite\n(arquivo, via sql.js)" as DB
+cloud "Provedor de pagamento\n(externo — simulado)" as PSP
+
+Clientes -down-> API : HTTP/JSON + Bearer JWT
+API -down-> APP : chama casos de uso
+APP -down-> DOM : aplica regras
+APP -down-> INF : persistência e adaptadores
+INF .up.> APP : implementa a porta\nGatewayDePagamento
+INF -down-> DB
+INF .down.> PSP : cobrança / estorno\n(simulado)
+@enduml

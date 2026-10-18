@@ -1,0 +1,31 @@
+@startuml 06-estados-pedido
+' Máquina de estados do pedido (src/domain/pedido/maquina-de-status.ts)
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+skinparam state {
+  BackgroundColor #FFF8EC
+  BorderColor #B5651D
+  ArrowColor #5A3E2B
+}
+
+[*] --> AGUARDANDO_PAGAMENTO : POST /pedidos\n(estoque reservado)
+AGUARDANDO_PAGAMENTO --> PAGO : pagamento aprovado
+AGUARDANDO_PAGAMENTO --> PAGAMENTO_RECUSADO : pagamento recusado (402)
+PAGAMENTO_RECUSADO --> PAGO : nova tentativa aprovada
+PAGAMENTO_RECUSADO --> PAGAMENTO_RECUSADO : nova recusa
+PAGO --> EM_PREPARO : COZINHA / GERENTE / ADMIN
+EM_PREPARO --> PRONTO : COZINHA / GERENTE / ADMIN
+PRONTO --> ENTREGUE : ATENDENTE / GERENTE / ADMIN
+AGUARDANDO_PAGAMENTO --> CANCELADO : qualquer perfil autorizado
+PAGAMENTO_RECUSADO --> CANCELADO
+PAGO --> CANCELADO : ATENDENTE / GERENTE / ADMIN\n(estorno + devolução de estoque)
+EM_PREPARO --> CANCELADO : GERENTE / ADMIN
+PRONTO --> CANCELADO : GERENTE / ADMIN
+ENTREGUE --> [*]
+CANCELADO --> [*]
+note right of AGUARDANDO_PAGAMENTO
+  Falha de comunicação com o
+  gateway (503) NÃO muda o status.
+end note
+@enduml

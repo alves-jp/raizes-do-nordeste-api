@@ -1,0 +1,79 @@
+@startuml 04-sequencia-fluxo-critico
+' Diagrama de Sequência — fluxo crítico: Pedido → Pagamento externo (mock) → Atualização de status
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+skinparam sequence {
+  ArrowColor #5A3E2B
+  LifeLineBorderColor #8C6A50
+  ParticipantBorderColor #5A3E2B
+  ParticipantBackgroundColor #FFF8EC
+  ActorBorderColor #7A1F2B
+  ActorBackgroundColor #FFF3D6
+  GroupBorderColor #B5651D
+  GroupBackgroundColor #FFF3E0
+}
+autonumber "<b>0."
+
+actor "Cliente\n(App)" as C
+participant "API\n(Controllers + Guard JWT)" as API
+participant "PedidosService" as PS
+participant "PagamentosService" as PG
+database "SQLite\n(transação)" as DB
+participant "Gateway de Pagamento\n(RaizesPay Sandbox — mock)" as GW
+actor "Cozinha" as K
+actor "Atendente" as A
+
+== 1. Criar pedido ==
+C -> API : POST /pedidos {unidadeId, canalPedido: APP,\nformaPagamento, itens, codigoCampanha?, pontosResgate?}\nIdempotency-Key
+API -> API : valida JWT, perfil e DTO (422 se inválido)
+API -> PS : criar(dados, ator, chave)
+activate PS
+PS -> DB : BEGIN
+PS -> PS : canal × perfil, unidade, cardápio,\ntemporada, campanha, pontos
+alt estoque insuficiente
+  PS -> DB : ROLLBACK
+  PS --> API : ESTOQUE_INSUFICIENTE
+  API --> C : 409 + erro padrão
+else itens válidos
+  PS -> DB : INSERT pedido (AGUARDANDO_PAGAMENTO) + itens
+  PS -> DB : UPDATE estoques (baixa) + movimentações
+  PS -> DB : INSERT logs_auditoria (PEDIDO_CRIADO)
+  PS -> DB : COMMIT
+  PS --> API : pedido
+  API --> C : 201 {id, status: AGUARDANDO_PAGAMENTO, total}
+end
+deactivate PS
+
+== 2. Pagar (provedor externo simulado) ==
+C -> API : POST /pagamentos {pedidoId, tokenPagamento}\nIdempotency-Key
+API -> PG : solicitar(dados, ator, chave)
+activate PG
+PG -> DB : INSERT pagamento PENDENTE (transação curta)
+PG -> GW : cobrar(referência, valor, forma, token)\n[timeout 2 s, 1 nova tentativa em falha transitória]
+alt aprovado
+  GW --> PG : {status: approved, id, authorization_code}
+  PG -> DB : pagamento APROVADO · pedido PAGO ·\npontos (se consentimento) · auditoria
+  PG --> API : resultado
+  API --> C : 201 {pagamento, pedido: PAGO, pontosCreditados}
+else recusado
+  GW --> PG : {status: declined, decline_code}
+  PG -> DB : pagamento RECUSADO · pedido PAGAMENTO_RECUSADO · auditoria
+  API --> C : 402 PAGAMENTO_RECUSADO (pode tentar de novo)
+else sem resposta / timeout
+  PG -> DB : pagamento FALHA_COMUNICACAO · auditoria (pedido inalterado)
+  API --> C : 503 GATEWAY_PAGAMENTO_INDISPONIVEL + Retry-After
+end
+deactivate PG
+
+== 3. Produção e entrega ==
+K -> API : GET /pedidos?status=PAGO (fila da unidade)
+K -> API : PATCH /pedidos/{id}/status {EM_PREPARO}
+API -> PS : atualizarStatus → máquina de estados + auditoria
+API --> K : 200 EM_PREPARO
+K -> API : PATCH /pedidos/{id}/status {PRONTO}
+API --> K : 200 PRONTO
+A -> API : PATCH /pedidos/{id}/status {ENTREGUE}
+API --> A : 200 ENTREGUE
+note over API, DB : Transição fora da ordem (ex.: EM_PREPARO → ENTREGUE) → 409 TRANSICAO_DE_STATUS_INVALIDA.\nPerfil sem permissão para a transição → 403.
+@enduml

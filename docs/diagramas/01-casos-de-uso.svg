@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1520" height="1020" viewBox="0 0 1520 1020" font-family="Arial, Helvetica, sans-serif">
+<defs>
+<marker id="aberta" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M1,1 L10,6 L1,11" fill="none" stroke="#4A3426" stroke-width="1.4"/></marker>
+<marker id="heranca" markerWidth="18" markerHeight="18" refX="16" refY="9" orient="auto"><path d="M1,1 L16,9 L1,17 Z" fill="#fff" stroke="#4A3426" stroke-width="1.4"/></marker>
+</defs>
+<rect width="1520" height="1020" fill="#ffffff"/>
+<rect x="232" y="60" width="1006" height="925" rx="6" fill="#FFFDF8" stroke="#4A3426" stroke-width="1.6"/>
+<text x="735" y="88" text-anchor="middle" font-size="17" font-weight="bold" fill="#2B1D14">Sistema: API Raízes do Nordeste</text>
+<line x1="126.0" y1="133.0" x2="308.0" y2="125.0" stroke="#4A3426" stroke-width="1.3"/>
+<line x1="126.0" y1="438.0" x2="308.0" y2="220.0" stroke="#4A3426" stroke-width="1.3"/>
+<line x1="126.0" y1="438.0" x2="308.0" y2="310.0" stroke="#4A3426" stroke-width="1.3"/>
+<line x1="126.0" y1="438.0" x2="308.0" y2="400.0" stroke="#4A3426" stroke-width="1.3"/>
+<line x1="126.0" y1="438.0" x2="308.0" y2="500.0" stroke="#4A3426" stroke-width="1.3"/>
+<line x1="126.0" y1="438.0" x2="308.0" y2="630.0" stroke="#4A3426" stroke-width="1.3"/>
+<line x1="126.0" y1="438.0" x2="308.0" y2="760.0" stroke="#4A3426" stroke-width="1.3"/>
+<line x1="126.0" y1="708.0" x2="308.0" y2="500.0" stroke="#4A3426" stroke-width="1.3"/>
+<line x1="126.0" y1="708.0" x2="308.0" y2="630.0" stroke="#4A3426" stroke-width="1.3"/>
+<line x1="126.0" y1="708.0" x2="308.0" y2="760.0" stroke="#4A3426" stroke-width="1.3"/>
+<line x1="126.0" y1="708.0" x2="308.0" y2="905.0" stroke="#4A3426" stroke-width="1.3"/>
+<line x1="126.0" y1="913.0" x2="308.0" y2="905.0" stroke="#4A3426" stroke-width="1.3"/>
+<line x1="1374.0" y1="298.0" x2="1207.0" y2="155.0" stroke="#4A3426" stroke-width="1.3"/>
+<line x1="1374.0" y1="298.0" x2="1207.0" y2="245.0" stroke="#4A3426" stroke-width="1.3"/>
+<line x1="1374.0" y1="298.0" x2="1207.0" y2="335.0" stroke="#4A3426" stroke-width="1.3"/>
+<line x1="1374.0" y1="298.0" x2="1207.0" y2="425.0" stroke="#4A3426" stroke-width="1.3"/>
+<line x1="1374.0" y1="768.0" x2="884.0" y2="665.0" stroke="#4A3426" stroke-width="1.3"/>
+<line x1="1374.0" y1="768.0" x2="884.0" y2="820.0" stroke="#4A3426" stroke-width="1.3"/>
+<line x1="518.5" y1="521.3" x2="673.5" y2="558.7" stroke="#4A3426" stroke-width="1.3" stroke-dasharray="7 5" marker-end="url(#aberta)"/>
+<text x="596.0" y="534.0" text-anchor="middle" font-size="12" fill="#4A3426" font-style="italic" paint-order="stroke" stroke="#FFFDF8" stroke-width="5">«include»</text>
+<line x1="542.7" y1="641.9" x2="649.3" y2="653.1" stroke="#4A3426" stroke-width="1.3" stroke-dasharray="7 5" marker-end="url(#aberta)"/>
+<text x="596.0" y="641.5" text-anchor="middle" font-size="12" fill="#4A3426" font-style="italic" paint-order="stroke" stroke="#FFFDF8" stroke-width="5">«include»</text>
+<line x1="640.0" y1="500.0" x2="552.0" y2="500.0" stroke="#4A3426" stroke-width="1.3" stroke-dasharray="7 5" marker-end="url(#aberta)"/>
+<text x="596.0" y="494.0" text-anchor="middle" font-size="12" fill="#4A3426" font-style="italic" paint-order="stroke" stroke="#FFFDF8" stroke-width="5">«extend»</text>
+<line x1="681.0" y1="428.2" x2="511.0" y2="476.8" stroke="#4A3426" stroke-width="1.3" stroke-dasharray="7 5" marker-end="url(#aberta)"/>
+<text x="596.0" y="446.5" text-anchor="middle" font-size="12" fill="#4A3426" font-style="italic" paint-order="stroke" stroke="#FFFDF8" stroke-width="5">«extend»</text>
+<line x1="662.6" y1="802.0" x2="529.4" y2="778.0" stroke="#4A3426" stroke-width="1.3" stroke-dasharray="7 5" marker-end="url(#aberta)"/>
+<text x="596.0" y="784.0" text-anchor="middle" font-size="12" fill="#4A3426" font-style="italic" paint-order="stroke" stroke="#FFFDF8" stroke-width="5">«extend»</text>
+<text x="596.0" y="798.0" text-anchor="middle" font-size="12" fill="#4A3426" font-style="italic" paint-order="stroke" stroke="#FFFDF8" stroke-width="5">[pedido já pago]</text>
+<line x1="30" y1="430" x2="78" y2="430" stroke="#4A3426" stroke-width="1.3"/>
+<line x1="30" y1="700" x2="78" y2="700" stroke="#4A3426" stroke-width="1.3"/>
+<line x1="30" y1="905" x2="78" y2="905" stroke="#4A3426" stroke-width="1.3"/>
+<polyline points="30,905 30,117 78,117" fill="none" stroke="#4A3426" stroke-width="1.3" marker-end="url(#heranca)"/>
+<polyline points="1422,320 1502,320 1502,1008 175,1008 175,726 118,726" fill="none" stroke="#4A3426" stroke-width="1.3" marker-end="url(#heranca)"/>
+<text x="1494" y="1000" text-anchor="end" font-size="12" font-style="italic" fill="#4A3426">Gerente/Administrador herda os casos de uso do Atendente</text>
+<ellipse cx="430" cy="125" rx="122" ry="31" fill="#FFF8EC" stroke="#B5651D" stroke-width="1.6"/>
+<text x="430" y="130" text-anchor="middle" font-size="13" font-weight="bold" fill="#2B1D14">UC01 Autenticar-se</text>
+<ellipse cx="430" cy="220" rx="122" ry="31" fill="#FFF8EC" stroke="#B5651D" stroke-width="1.6"/>
+<text x="430" y="217" text-anchor="middle" font-size="13" font-weight="bold" fill="#2B1D14">UC02 Cadastrar-se e gerir</text>
+<text x="430" y="233" text-anchor="middle" font-size="13" font-weight="normal" fill="#2B1D14">consentimentos (LGPD)</text>
+<ellipse cx="430" cy="310" rx="122" ry="31" fill="#FFF8EC" stroke="#B5651D" stroke-width="1.6"/>
+<text x="430" y="307" text-anchor="middle" font-size="13" font-weight="bold" fill="#2B1D14">UC03 Consultar cardápio</text>
+<text x="430" y="323" text-anchor="middle" font-size="13" font-weight="normal" fill="#2B1D14">da unidade</text>
+<ellipse cx="430" cy="400" rx="122" ry="31" fill="#FFF8EC" stroke="#B5651D" stroke-width="1.6"/>
+<text x="430" y="397" text-anchor="middle" font-size="13" font-weight="bold" fill="#2B1D14">UC15 Exportar / excluir</text>
+<text x="430" y="413" text-anchor="middle" font-size="13" font-weight="normal" fill="#2B1D14">meus dados (LGPD)</text>
+<ellipse cx="430" cy="500" rx="122" ry="31" fill="#FFF8EC" stroke="#B5651D" stroke-width="1.6"/>
+<text x="430" y="497" text-anchor="middle" font-size="13" font-weight="bold" fill="#2B1D14">UC04 Realizar pedido</text>
+<text x="430" y="513" text-anchor="middle" font-size="13" font-weight="normal" fill="#2B1D14">(informando canalPedido)</text>
+<ellipse cx="430" cy="630" rx="122" ry="31" fill="#FFF8EC" stroke="#B5651D" stroke-width="1.6"/>
+<text x="430" y="635" text-anchor="middle" font-size="13" font-weight="bold" fill="#2B1D14">UC05 Solicitar pagamento</text>
+<ellipse cx="430" cy="760" rx="122" ry="31" fill="#FFF8EC" stroke="#B5651D" stroke-width="1.6"/>
+<text x="430" y="765" text-anchor="middle" font-size="13" font-weight="bold" fill="#2B1D14">UC10 Cancelar pedido</text>
+<ellipse cx="430" cy="905" rx="122" ry="31" fill="#FFF8EC" stroke="#B5651D" stroke-width="1.6"/>
+<text x="430" y="902" text-anchor="middle" font-size="13" font-weight="bold" fill="#2B1D14">UC11 Atualizar status</text>
+<text x="430" y="918" text-anchor="middle" font-size="13" font-weight="normal" fill="#2B1D14">(preparo → pronto → entregue)</text>
+<ellipse cx="762" cy="405" rx="122" ry="31" fill="#FFF8EC" stroke="#B5651D" stroke-width="1.6"/>
+<text x="762" y="402" text-anchor="middle" font-size="13" font-weight="bold" fill="#2B1D14">UC07 Aplicar campanha</text>
+<text x="762" y="418" text-anchor="middle" font-size="13" font-weight="normal" fill="#2B1D14">promocional</text>
+<ellipse cx="762" cy="500" rx="122" ry="31" fill="#FFF8EC" stroke="#B5651D" stroke-width="1.6"/>
+<text x="762" y="497" text-anchor="middle" font-size="13" font-weight="bold" fill="#2B1D14">UC06 Resgatar pontos</text>
+<text x="762" y="513" text-anchor="middle" font-size="13" font-weight="normal" fill="#2B1D14">de fidelidade</text>
+<ellipse cx="762" cy="580" rx="122" ry="31" fill="#FFF8EC" stroke="#B5651D" stroke-width="1.6"/>
+<text x="762" y="577" text-anchor="middle" font-size="13" font-weight="bold" fill="#2B1D14">UC08 Reservar estoque</text>
+<text x="762" y="593" text-anchor="middle" font-size="13" font-weight="normal" fill="#2B1D14">da unidade</text>
+<ellipse cx="762" cy="665" rx="122" ry="31" fill="#FFF8EC" stroke="#B5651D" stroke-width="1.6"/>
+<text x="762" y="662" text-anchor="middle" font-size="13" font-weight="bold" fill="#2B1D14">UC09 Processar cobrança</text>
+<text x="762" y="678" text-anchor="middle" font-size="13" font-weight="normal" fill="#2B1D14">no gateway</text>
+<ellipse cx="762" cy="820" rx="122" ry="31" fill="#FFF8EC" stroke="#B5651D" stroke-width="1.6"/>
+<text x="762" y="825" text-anchor="middle" font-size="13" font-weight="bold" fill="#2B1D14">UC17 Estornar pagamento</text>
+<ellipse cx="1085" cy="155" rx="122" ry="31" fill="#FFF8EC" stroke="#B5651D" stroke-width="1.6"/>
+<text x="1085" y="152" text-anchor="middle" font-size="13" font-weight="bold" fill="#2B1D14">UC16 Cadastrar funcionários</text>
+<text x="1085" y="168" text-anchor="middle" font-size="13" font-weight="normal" fill="#2B1D14">e totens</text>
+<ellipse cx="1085" cy="245" rx="122" ry="31" fill="#FFF8EC" stroke="#B5651D" stroke-width="1.6"/>
+<text x="1085" y="242" text-anchor="middle" font-size="13" font-weight="bold" fill="#2B1D14">UC13 Gerir produtos,</text>
+<text x="1085" y="258" text-anchor="middle" font-size="13" font-weight="normal" fill="#2B1D14">cardápio e campanhas</text>
+<ellipse cx="1085" cy="335" rx="122" ry="31" fill="#FFF8EC" stroke="#B5651D" stroke-width="1.6"/>
+<text x="1085" y="332" text-anchor="middle" font-size="13" font-weight="bold" fill="#2B1D14">UC12 Movimentar e</text>
+<text x="1085" y="348" text-anchor="middle" font-size="13" font-weight="normal" fill="#2B1D14">consultar estoque</text>
+<ellipse cx="1085" cy="425" rx="122" ry="31" fill="#FFF8EC" stroke="#B5651D" stroke-width="1.6"/>
+<text x="1085" y="422" text-anchor="middle" font-size="13" font-weight="bold" fill="#2B1D14">UC14 Consultar auditoria e</text>
+<text x="1085" y="438" text-anchor="middle" font-size="13" font-weight="normal" fill="#2B1D14">consolidação por canal</text>
+<g stroke="#7A6A5A" stroke-width="2" fill="none" stroke-dasharray="4 3"><circle cx="100" cy="95" r="11" fill="#FFF3D6"/><line x1="100" y1="106" x2="100" y2="137"/><line x1="80" y1="117" x2="120" y2="117"/><line x1="100" y1="137" x2="85" y2="159"/><line x1="100" y1="137" x2="115" y2="159"/></g>
+<text x="100" y="179" text-anchor="middle" font-size="13" font-weight="bold" font-style="italic" fill="#2B1D14">Usuário autenticado</text>
+<g stroke="#7A1F2B" stroke-width="2" fill="none" ><circle cx="100" cy="400" r="11" fill="#FFF3D6"/><line x1="100" y1="411" x2="100" y2="442"/><line x1="80" y1="422" x2="120" y2="422"/><line x1="100" y1="442" x2="85" y2="464"/><line x1="100" y1="442" x2="115" y2="464"/></g>
+<text x="100" y="484" text-anchor="middle" font-size="13" font-weight="bold"  fill="#2B1D14">Cliente</text>
+<text x="100" y="499" text-anchor="middle" font-size="13" font-weight="normal"  fill="#2B1D14">(App / Web / Totem)</text>
+<g stroke="#7A1F2B" stroke-width="2" fill="none" ><circle cx="100" cy="670" r="11" fill="#FFF3D6"/><line x1="100" y1="681" x2="100" y2="712"/><line x1="80" y1="692" x2="120" y2="692"/><line x1="100" y1="712" x2="85" y2="734"/><line x1="100" y1="712" x2="115" y2="734"/></g>
+<text x="100" y="754" text-anchor="middle" font-size="13" font-weight="bold"  fill="#2B1D14">Atendente</text>
+<text x="100" y="769" text-anchor="middle" font-size="13" font-weight="normal"  fill="#2B1D14">(Balcão)</text>
+<g stroke="#7A1F2B" stroke-width="2" fill="none" ><circle cx="100" cy="875" r="11" fill="#FFF3D6"/><line x1="100" y1="886" x2="100" y2="917"/><line x1="80" y1="897" x2="120" y2="897"/><line x1="100" y1="917" x2="85" y2="939"/><line x1="100" y1="917" x2="115" y2="939"/></g>
+<text x="100" y="959" text-anchor="middle" font-size="13" font-weight="bold"  fill="#2B1D14">Cozinha</text>
+<g stroke="#7A1F2B" stroke-width="2" fill="none" ><circle cx="1400" cy="260" r="11" fill="#FFF3D6"/><line x1="1400" y1="271" x2="1400" y2="302"/><line x1="1380" y1="282" x2="1420" y2="282"/><line x1="1400" y1="302" x2="1385" y2="324"/><line x1="1400" y1="302" x2="1415" y2="324"/></g>
+<text x="1400" y="344" text-anchor="middle" font-size="13" font-weight="bold"  fill="#2B1D14">Gerente /</text>
+<text x="1400" y="359" text-anchor="middle" font-size="13" font-weight="normal"  fill="#2B1D14">Administrador</text>
+<g stroke="#7A1F2B" stroke-width="2" fill="none" ><circle cx="1400" cy="730" r="11" fill="#FFF3D6"/><line x1="1400" y1="741" x2="1400" y2="772"/><line x1="1380" y1="752" x2="1420" y2="752"/><line x1="1400" y1="772" x2="1385" y2="794"/><line x1="1400" y1="772" x2="1415" y2="794"/></g>
+<text x="1400" y="814" text-anchor="middle" font-size="13" font-weight="bold"  fill="#2B1D14">Gateway de Pagamento</text>
+<text x="1400" y="829" text-anchor="middle" font-size="13" font-weight="normal" font-style="italic" fill="#2B1D14">«sistema externo»</text>
+</svg>
