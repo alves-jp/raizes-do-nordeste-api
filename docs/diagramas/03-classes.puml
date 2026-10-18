@@ -4,6 +4,8 @@ skinparam shadowing false
 skinparam defaultFontName Arial
 skinparam defaultFontSize 11
 skinparam classAttributeIconSize 0
+skinparam nodesep 30
+skinparam ranksep 45
 skinparam class {
   BackgroundColor #FFFDF8
   BorderColor #5A3E2B
@@ -182,4 +184,9 @@ GatewayDePagamentoMock ..|> GatewayDePagamento
 Pedido ..> CanalPedido
 Pedido ..> StatusPedido
 Usuario ..> Perfil
+
+' ---- layout: empilha os pacotes em duas linhas para caber em uma página A4 deitada
+MovimentacaoEstoque -[hidden]down-> Pedido
+Consentimento -[hidden]down-> Campanha
+Perfil -[hidden]down-> LogAuditoria
 @enduml
