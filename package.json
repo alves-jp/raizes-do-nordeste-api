@@ -2,6 +2,12 @@
   "name": "raizes-do-nordeste-api",
   "version": "1.0.0",
   "description": "API Back-end da Rede Raízes do Nordeste — pedidos multicanal, estoque por unidade, pagamento mock, fidelização e LGPD (Projeto Multidisciplinar UNINTER — Trilha Back-End)",
+  "author": "João Pedro Alves e Silva",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alves-jp/raizes-do-nordeste-api.git"
+  },
+  "homepage": "https://alves-jp.github.io/raizes-do-nordeste-api/swagger/",
   "private": true,
   "license": "UNLICENSED",
   "engines": {
