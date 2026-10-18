@@ -1,0 +1,109 @@
+@startuml 03a-classes-catalogo-pessoas
+' Diagrama de Classes — parte 1: rede, catálogo, estoque, pessoas e LGPD
+' Classes em cinza («ref») estão detalhadas na parte 2.
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 13
+skinparam classAttributeIconSize 0
+skinparam nodesep 45
+skinparam ranksep 60
+skinparam class {
+  BackgroundColor #FFFDF8
+  BorderColor #5A3E2B
+  ArrowColor #5A3E2B
+  HeaderBackgroundColor #F3DFC1
+  BackgroundColor<<ref>> #F2F2F2
+  BorderColor<<ref>> #9A9A9A
+  HeaderBackgroundColor<<ref>> #E3E3E3
+  FontColor<<ref>> #555555
+  StereotypeFontColor<<ref>> #777777
+}
+skinparam package {
+  BorderColor #B5651D
+  FontColor #5A3E2B
+}
+hide empty members
+
+package "Rede e catálogo" {
+  class Unidade {
+    id : int
+    nome : string
+    cidade : string
+    uf : string
+    tipo : TipoUnidade
+    ativa : boolean
+  }
+  class Produto {
+    id : int
+    nome : string
+    categoria : CategoriaProduto
+    sazonal : boolean
+    mesInicio : int
+    mesFim : int
+    ativo : boolean
+    + estaEmTemporada(data) : boolean
+  }
+  class ItemCardapio {
+    precoCentavos : int
+    disponivel : boolean
+  }
+  class Estoque {
+    quantidade : int
+    estoqueMinimo : int
+    + reservar(qtd)
+    + devolver(qtd)
+  }
+  class MovimentacaoEstoque {
+    tipo : TipoMovimentacaoEstoque
+    quantidade : int
+    saldoApos : int
+    motivo : string
+  }
+}
+
+package "Pessoas e LGPD" {
+  class Usuario {
+    id : int
+    nome : string
+    email : string
+    senhaHash : string
+    telefone : string
+    perfil : Perfil
+    ativo : boolean
+    anonimizadoEm : Date
+    + anonimizar()
+  }
+  class Consentimento {
+    finalidade : FinalidadeConsentimento
+    concedido : boolean
+    versaoTermo : string
+    origem : string
+    registradoEm : Date
+  }
+  enum Perfil {
+    CLIENTE
+    ATENDENTE
+    COZINHA
+    GERENTE
+    ADMIN
+    TOTEM
+  }
+}
+
+class Pedido <<ref>> {
+  (detalhado na parte 2)
+}
+
+Unidade "1" *-- "0..*" ItemCardapio : cardápio >
+Produto "1" -- "0..*" ItemCardapio
+Unidade "1" *-- "0..*" Estoque : estoque próprio >
+Produto "1" -- "0..*" Estoque
+Estoque "1" -- "0..*" MovimentacaoEstoque : histórico >
+Unidade "1" o-- "0..*" Usuario : funcionários >
+Usuario "1" *-- "0..*" Consentimento : prova do consentimento >
+Usuario ..> Perfil
+MovimentacaoEstoque "0..*" --> "0..1" Pedido : reserva / estorno >
+
+' layout em linhas (cabe em uma página A4 em pé)
+ItemCardapio -[hidden]down- Usuario
+@enduml

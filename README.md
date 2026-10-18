@@ -272,11 +272,17 @@ e header `X-Request-Id` em todas as respostas.
 | Diagrama | Arquivo |
 |---|---|
 | Casos de uso | [`docs/diagramas/01-casos-de-uso.png`](docs/diagramas/01-casos-de-uso.png) |
-| DER (modelo de dados) | [`docs/diagramas/02-der.png`](docs/diagramas/02-der.png) |
-| Classes (domínio) | [`docs/diagramas/03-classes.png`](docs/diagramas/03-classes.png) |
+| DER (modelo de dados) — completo | [`docs/diagramas/02-der.png`](docs/diagramas/02-der.png) |
+| DER — parte 1: rede, catálogo, cardápio, estoque e campanhas | [`docs/diagramas/02a-der-catalogo-estoque.svg`](docs/diagramas/02a-der-catalogo-estoque.svg) |
+| DER — parte 2: usuários e LGPD, pedidos, pagamentos, fidelidade e auditoria | [`docs/diagramas/02b-der-pedidos-pagamentos.svg`](docs/diagramas/02b-der-pedidos-pagamentos.svg) |
+| Classes (domínio) — completo | [`docs/diagramas/03-classes.png`](docs/diagramas/03-classes.png) |
+| Classes — parte 1: rede, catálogo, estoque, pessoas e LGPD | [`docs/diagramas/03a-classes-catalogo-pessoas.svg`](docs/diagramas/03a-classes-catalogo-pessoas.svg) |
+| Classes — parte 2: pedidos, pagamento, fidelidade, campanhas e auditoria | [`docs/diagramas/03b-classes-pedidos-pagamento.svg`](docs/diagramas/03b-classes-pedidos-pagamento.svg) |
 | Sequência do fluxo crítico | [`docs/diagramas/04-sequencia-fluxo-critico.png`](docs/diagramas/04-sequencia-fluxo-critico.png) |
 | Arquitetura em camadas | [`docs/diagramas/05-arquitetura-camadas.png`](docs/diagramas/05-arquitetura-camadas.png) |
 | Estados do pedido | [`docs/diagramas/06-estados-pedido.png`](docs/diagramas/06-estados-pedido.png) |
+
+As versões divididas em duas partes são as usadas no documento PDF (cabem em página A4 em pé). Entidades/classes em cinza, marcadas «ref», são apenas referência e estão detalhadas na outra parte.
 
 Os fontes PlantUML (`.puml`) e SVG estão na mesma pasta. O DER corresponde exatamente à migration `src/infrastructure/database/migrations/1792200000000-EsquemaInicial.ts`.
 

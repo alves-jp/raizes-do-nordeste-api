@@ -1,0 +1,127 @@
+@startuml 03b-classes-pedidos-pagamento
+' Diagrama de Classes — parte 2: pedidos, pagamento, fidelidade, campanhas e auditoria
+' Classes em cinza («ref») estão detalhadas na parte 1.
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 13
+skinparam classAttributeIconSize 0
+skinparam nodesep 45
+skinparam ranksep 60
+skinparam class {
+  BackgroundColor #FFFDF8
+  BorderColor #5A3E2B
+  ArrowColor #5A3E2B
+  HeaderBackgroundColor #F3DFC1
+  BackgroundColor<<ref>> #F2F2F2
+  BorderColor<<ref>> #9A9A9A
+  HeaderBackgroundColor<<ref>> #E3E3E3
+  FontColor<<ref>> #555555
+  StereotypeFontColor<<ref>> #777777
+}
+skinparam package {
+  BorderColor #B5651D
+  FontColor #5A3E2B
+}
+hide empty members
+
+class Unidade <<ref>>
+class Usuario <<ref>>
+class Produto <<ref>>
+
+package "Pedidos e pagamento" {
+  class Pedido {
+    id : int
+    canalPedido : CanalPedido
+    status : StatusPedido
+    formaPagamento : FormaPagamento
+    subtotalCentavos : int
+    descontoCampanhaCentavos : int
+    descontoPontosCentavos : int
+    totalCentavos : int
+    pontosResgatados : int
+    chaveIdempotencia : string
+    + atualizarStatus(novo, perfil)
+    + cancelar(motivo, perfil)
+  }
+  class ItemPedido {
+    nomeProduto : string
+    quantidade : int
+    precoUnitarioCentavos : int
+    subtotalCentavos : int
+  }
+  class Pagamento {
+    valorCentavos : int
+    forma : FormaPagamento
+    status : StatusPagamento
+    transacaoExternaId : string
+    codigoRetorno : string
+    respostaGateway : JSON
+    chaveIdempotencia : string
+  }
+  interface GatewayDePagamento <<porta>> {
+    + cobrar(solicitacao) : RespostaDeCobranca
+    + estornar(transacaoId, valor) : RespostaDeEstorno
+  }
+  class GatewayDePagamentoMock <<adaptador>>
+}
+
+package "Enumerações" {
+  enum CanalPedido {
+    APP
+    TOTEM
+    BALCAO
+    PICKUP
+    WEB
+  }
+  enum StatusPedido {
+    AGUARDANDO_PAGAMENTO
+    PAGAMENTO_RECUSADO
+    PAGO
+    EM_PREPARO
+    PRONTO
+    ENTREGUE
+    CANCELADO
+  }
+}
+
+package "Fidelidade, campanhas e auditoria" {
+  class TransacaoFidelidade {
+    tipo : TipoTransacaoFidelidade
+    pontos : int
+    descricao : string
+  }
+  class Campanha {
+    codigo : string
+    percentualDesconto : int
+    inicio : Date
+    fim : Date
+    canalPedido : CanalPedido
+    valorMinimoCentavos : int
+    + calcularDesconto(contexto) : int
+  }
+  class LogAuditoria {
+    acao : AcaoAuditoria
+    entidade : string
+    entidadeId : int
+    perfil : Perfil
+    detalhes : JSON
+    requestId : string
+  }
+}
+
+Unidade "1" -- "0..*" Pedido
+Usuario "0..1" -- "0..*" Pedido : cliente >
+Pedido "1" *-- "1..*" ItemPedido
+ItemPedido "0..*" --> "1" Produto
+Pedido "1" -- "0..*" Pagamento : tentativas >
+Pagamento ..> GatewayDePagamento : solicitado via >
+GatewayDePagamento <|.. GatewayDePagamentoMock
+Pedido "0..*" --> "0..1" Campanha
+Usuario "1" -- "0..*" TransacaoFidelidade : extrato >
+Pedido "0..1" -- "0..*" TransacaoFidelidade
+
+' layout em linhas (cabe em uma página A4 em pé)
+Campanha -[hidden]down- LogAuditoria
+GatewayDePagamentoMock -[hidden]down- CanalPedido
+LogAuditoria -[hidden]down- StatusPedido
+@enduml

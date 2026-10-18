@@ -1,0 +1,126 @@
+@startuml 02a-der-catalogo-estoque
+' DER — parte 1: rede, catálogo, cardápio por unidade, estoque e campanhas
+' Entidades em cinza («ref») estão detalhadas na parte 2.
+hide circle
+skinparam linetype ortho
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 13
+skinparam nodesep 40
+skinparam ranksep 55
+skinparam class {
+  BackgroundColor #FFFDF8
+  BorderColor #5A3E2B
+  ArrowColor #5A3E2B
+  HeaderBackgroundColor #F3DFC1
+  BackgroundColor<<ref>> #F2F2F2
+  BorderColor<<ref>> #9A9A9A
+  HeaderBackgroundColor<<ref>> #E3E3E3
+  FontColor<<ref>> #555555
+  StereotypeFontColor<<ref>> #777777
+}
+
+entity "unidades" as unidades {
+  * id : INTEGER <<PK>>
+  --
+  * nome : VARCHAR(120)
+  * cidade : VARCHAR(80)
+  * uf : VARCHAR(2)
+  * tipo : PROPRIA | FRANQUIA
+  horario_funcionamento : VARCHAR(20)
+  * ativa : BOOLEAN
+  * criado_em : DATETIME
+}
+
+entity "produtos" as produtos {
+  * id : INTEGER <<PK>>
+  --
+  * nome : VARCHAR(120) <<UNIQUE>>
+  descricao : VARCHAR(400)
+  * categoria : TAPIOCAS | CUSCUZ | PRATOS
+    | SALGADOS | DOCES | BEBIDAS
+  * sazonal : BOOLEAN
+  mes_inicio : INTEGER (1–12)
+  mes_fim : INTEGER (1–12)
+  * ativo : BOOLEAN
+  <<CHECK sazonal = 0 OR meses 1–12>>
+}
+
+entity "itens_cardapio" as cardapio {
+  * id : INTEGER <<PK>>
+  --
+  * unidade_id : INTEGER <<FK>>
+  * produto_id : INTEGER <<FK>>
+  * preco_centavos : INTEGER <<CHECK > 0>>
+  * disponivel : BOOLEAN
+  <<UNIQUE (unidade_id, produto_id)>>
+}
+
+entity "estoques" as estoques {
+  * id : INTEGER <<PK>>
+  --
+  * unidade_id : INTEGER <<FK>>
+  * produto_id : INTEGER <<FK>>
+  * quantidade : INTEGER <<CHECK >= 0>>
+  * estoque_minimo : INTEGER
+  <<UNIQUE (unidade_id, produto_id)>>
+}
+
+entity "movimentacoes_estoque" as movs {
+  * id : INTEGER <<PK>>
+  --
+  * unidade_id : INTEGER <<FK>>
+  * produto_id : INTEGER <<FK>>
+  * tipo : ENTRADA | SAIDA
+    | RESERVA_PEDIDO | ESTORNO_PEDIDO
+  * quantidade : INTEGER <<CHECK > 0>>
+  * saldo_apos : INTEGER
+  motivo : VARCHAR(200)
+  pedido_id : INTEGER <<FK>>
+  usuario_id : INTEGER <<FK>>
+  * criado_em : DATETIME
+}
+
+entity "campanhas" as campanhas {
+  * id : INTEGER <<PK>>
+  --
+  * codigo : VARCHAR(30) <<UNIQUE>>
+  * descricao : VARCHAR(200)
+  * percentual_desconto : INTEGER <<CHECK 1–50>>
+  * inicio : DATETIME
+  * fim : DATETIME <<CHECK fim > inicio>>
+  unidade_id : INTEGER <<FK>>
+  canal_pedido : APP | TOTEM | BALCAO
+    | PICKUP | WEB
+  * valor_minimo_centavos : INTEGER
+  * ativa : BOOLEAN
+}
+
+entity "usuarios" as usuarios <<ref>> {
+  * id : INTEGER <<PK>>
+  --
+  (detalhado na parte 2)
+}
+
+entity "pedidos" as pedidos <<ref>> {
+  * id : INTEGER <<PK>>
+  --
+  (detalhado na parte 2)
+}
+
+unidades ||--o{ cardapio : "cardápio da unidade"
+produtos ||--o{ cardapio
+unidades ||--o{ estoques : "estoque próprio"
+produtos ||--o{ estoques
+unidades ||--o{ movs
+produtos ||--o{ movs
+unidades |o--o{ campanhas : "restringe (opcional)"
+unidades |o--o{ usuarios
+movs }o--o| pedidos : "reserva / estorno"
+movs }o--o| usuarios
+
+' layout em linhas (cabe em uma página A4 em pé)
+cardapio -[hidden]down-> campanhas
+estoques -[hidden]down-> movs
+campanhas -[hidden]down-> usuarios
+@enduml

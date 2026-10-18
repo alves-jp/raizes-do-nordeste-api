@@ -1,0 +1,154 @@
+@startuml 02b-der-pedidos-pagamentos
+' DER — parte 2: usuários e LGPD, pedidos, pagamentos, fidelidade e auditoria
+' Entidades em cinza («ref») estão detalhadas na parte 1.
+hide circle
+skinparam linetype ortho
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 13
+skinparam nodesep 40
+skinparam ranksep 55
+skinparam class {
+  BackgroundColor #FFFDF8
+  BorderColor #5A3E2B
+  ArrowColor #5A3E2B
+  HeaderBackgroundColor #F3DFC1
+  BackgroundColor<<ref>> #F2F2F2
+  BorderColor<<ref>> #9A9A9A
+  HeaderBackgroundColor<<ref>> #E3E3E3
+  FontColor<<ref>> #555555
+  StereotypeFontColor<<ref>> #777777
+}
+
+entity "usuarios" as usuarios {
+  * id : INTEGER <<PK>>
+  --
+  * nome : VARCHAR(120)
+  * email : VARCHAR(160) <<UNIQUE>>
+  * senha_hash : VARCHAR(100) (bcrypt)
+  telefone : VARCHAR(20)
+  * perfil : CLIENTE | ATENDENTE | COZINHA
+    | GERENTE | ADMIN | TOTEM
+  unidade_id : INTEGER <<FK>>
+  * ativo : BOOLEAN
+  versao_termos_aceita : VARCHAR(10)
+  termos_aceitos_em : DATETIME
+  anonimizado_em : DATETIME
+}
+
+entity "consentimentos" as consentimentos {
+  * id : INTEGER <<PK>>
+  --
+  * usuario_id : INTEGER <<FK>>
+  * finalidade : FIDELIDADE | MARKETING
+  * concedido : BOOLEAN
+  * versao_termo : VARCHAR(10)
+  * origem : VARCHAR(40)
+  * registrado_em : DATETIME
+}
+
+entity "pedidos" as pedidos {
+  * id : INTEGER <<PK>>
+  --
+  * unidade_id : INTEGER <<FK>>
+  cliente_id : INTEGER <<FK>>
+  * criado_por_id : INTEGER <<FK>>
+  * canal_pedido : APP | TOTEM | BALCAO | PICKUP | WEB
+  * status : AGUARDANDO_PAGAMENTO | PAGAMENTO_RECUSADO
+    | PAGO | EM_PREPARO | PRONTO | ENTREGUE | CANCELADO
+  * forma_pagamento : PIX | CARTAO_CREDITO | CARTAO_DEBITO
+  * subtotal_centavos : INTEGER
+  * desconto_campanha_centavos : INTEGER
+  * desconto_pontos_centavos : INTEGER
+  * total_centavos : INTEGER
+  campanha_id : INTEGER <<FK>>
+  * pontos_resgatados : INTEGER
+  observacao, motivo_cancelamento : VARCHAR(200)
+  chave_idempotencia : VARCHAR(80)
+  <<UNIQUE (criado_por_id, chave_idempotencia)>>
+  <<CHECK total = subtotal − descontos>>
+}
+
+entity "itens_pedido" as itens {
+  * id : INTEGER <<PK>>
+  --
+  * pedido_id : INTEGER <<FK>>
+  * produto_id : INTEGER <<FK>>
+  * nome_produto : VARCHAR(120) (snapshot)
+  * quantidade : INTEGER <<CHECK > 0>>
+  * preco_unitario_centavos : INTEGER (snapshot)
+  * subtotal_centavos : INTEGER
+}
+
+entity "pagamentos" as pagamentos {
+  * id : INTEGER <<PK>>
+  --
+  * pedido_id : INTEGER <<FK>>
+  * valor_centavos : INTEGER
+  * forma : PIX | CARTAO_CREDITO | CARTAO_DEBITO
+  * status : PENDENTE | APROVADO | RECUSADO
+    | FALHA_COMUNICACAO | ESTORNADO
+  transacao_externa_id : VARCHAR(80)
+  codigo_retorno, mensagem_retorno
+  resposta_gateway : TEXT (JSON)
+  chave_idempotencia : VARCHAR(80) <<UNIQUE>>
+}
+
+entity "transacoes_fidelidade" as fidelidade {
+  * id : INTEGER <<PK>>
+  --
+  * cliente_id : INTEGER <<FK>>
+  pedido_id : INTEGER <<FK>>
+  * tipo : ACUMULO | RESGATE
+    | ESTORNO_ACUMULO | ESTORNO_RESGATE
+  * pontos : INTEGER (+ crédito / − débito)
+  * descricao : VARCHAR(160)
+}
+
+entity "logs_auditoria" as auditoria {
+  * id : INTEGER <<PK>>
+  --
+  * acao : PEDIDO_CRIADO | PAGAMENTO_APROVADO | ...
+  * entidade : VARCHAR(40)
+  entidade_id, usuario_id, unidade_id : INTEGER
+  perfil : VARCHAR
+  detalhes : TEXT (JSON, sem dados pessoais)
+  ip : VARCHAR(45)
+  request_id : VARCHAR(64)
+  * criado_em : DATETIME
+  (sem FK: trilha imutável)
+}
+
+entity "unidades" as unidades <<ref>> {
+  * id : INTEGER <<PK>>
+  --
+  (detalhado na parte 1)
+}
+
+entity "produtos" as produtos <<ref>> {
+  * id : INTEGER <<PK>>
+  --
+  (detalhado na parte 1)
+}
+
+entity "campanhas" as campanhas <<ref>> {
+  * id : INTEGER <<PK>>
+  --
+  (detalhado na parte 1)
+}
+
+usuarios ||--o{ consentimentos : "histórico"
+unidades ||--o{ pedidos
+usuarios |o--o{ pedidos : "cliente"
+usuarios ||--o{ pedidos : "criado por"
+campanhas |o--o{ pedidos
+pedidos ||--|{ itens
+produtos ||--o{ itens
+pedidos ||--o{ pagamentos : "tentativas"
+usuarios ||--o{ fidelidade
+pedidos |o--o{ fidelidade
+
+' layout em linhas (cabe em uma página A4 em pé)
+unidades -[hidden]down-> produtos
+fidelidade -[hidden]down-> auditoria
+@enduml
