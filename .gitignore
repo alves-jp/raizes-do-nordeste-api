@@ -1,0 +1,10 @@
+node_modules/
+dist/
+coverage/
+.env
+data/*.sqlite
+data/*.sqlite-journal
+*.tsbuildinfo
+.DS_Store
+npm-debug.log*
+newman/
