@@ -1,0 +1,79 @@
+{
+  "duracao": 15,
+  "resultados": [
+    {
+      "cenario": "A1 Capacidade — leitura do cardápio",
+      "conexoes": 50,
+      "duracao": 15,
+      "requisicoes": 9600,
+      "reqPorSegundo": 640,
+      "p50": 73,
+      "p90": 95,
+      "p99": 148,
+      "max": 1359,
+      "erros": 0,
+      "respostas2xx": 9600,
+      "naoSucesso": 0,
+      "meta": {},
+      "aprovado": true
+    },
+    {
+      "cenario": "A2 Capacidade — criação de pedidos",
+      "conexoes": 20,
+      "duracao": 15,
+      "requisicoes": 2620,
+      "reqPorSegundo": 175,
+      "p50": 112,
+      "p90": 138,
+      "p99": 185,
+      "max": 801,
+      "erros": 0,
+      "respostas2xx": 2620,
+      "naoSucesso": 0,
+      "meta": {},
+      "aprovado": true
+    },
+    {
+      "cenario": "B Pico ×10 — leitura do cardápio (200/s)",
+      "conexoes": 20,
+      "duracao": 15,
+      "requisicoes": 3024,
+      "reqPorSegundo": 202,
+      "p50": 21,
+      "p90": 53,
+      "p99": 96,
+      "max": 208,
+      "erros": 0,
+      "respostas2xx": 3024,
+      "naoSucesso": 0,
+      "meta": {
+        "p99Ms": 200
+      },
+      "aprovado": true
+    },
+    {
+      "cenario": "B Pico ×10 — criação de pedidos (20/s)",
+      "conexoes": 5,
+      "duracao": 15,
+      "requisicoes": 300,
+      "reqPorSegundo": 20,
+      "p50": 32,
+      "p90": 66,
+      "p99": 233,
+      "max": 318,
+      "erros": 0,
+      "respostas2xx": 300,
+      "naoSucesso": 0,
+      "meta": {
+        "p99Ms": 500
+      },
+      "aprovado": true
+    }
+  ],
+  "consistencia": {
+    "respostas201Medidas": 2920,
+    "pedidosNoBanco": 3034,
+    "baixaDeEstoque": 3034,
+    "registrosDeAuditoria": 3034
+  }
+}

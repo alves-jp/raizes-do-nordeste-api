@@ -14,7 +14,7 @@ describe('LGPD, auditoria e estoque', () => {
       nome: 'Carla Menezes',
       email: 'Carla.Menezes@Email.com',
       senha: 'Cuscuz2026',
-      telefone: '(71) 98888-7777',
+      telefone: '(81) 98888-7777',
       aceiteTermos: true,
       consentimentos: { fidelidade: true },
     };
@@ -85,17 +85,17 @@ describe('LGPD, auditoria e estoque', () => {
 
   describe('Auditoria', () => {
     it('criação de pedido e mudança de status geram registro com autor, unidade e detalhes', async () => {
-      const atendente = await ctx.token(USUARIOS.atendenteSalvador);
+      const atendente = await ctx.token(USUARIOS.atendenteRecife);
       const pedido = await ctx
         .http()
         .post('/pedidos')
         .set('Authorization', `Bearer ${atendente}`)
-        .send({ unidadeId: IDS.salvador, canalPedido: 'BALCAO', formaPagamento: 'PIX', itens: [{ produtoId: IDS.cuscuzComOvo, quantidade: 1 }] })
+        .send({ unidadeId: IDS.recife, canalPedido: 'BALCAO', formaPagamento: 'PIX', itens: [{ produtoId: IDS.cuscuzComOvo, quantidade: 1 }] })
         .expect(201);
 
-      const gerente = await ctx.token(USUARIOS.gerenteSalvador);
+      const gerente = await ctx.token(USUARIOS.gerenteRecife);
       const res = await ctx.http().get(`/auditoria?acao=PEDIDO_CRIADO&entidadeId=${pedido.body.id}`).set('Authorization', `Bearer ${gerente}`).expect(200);
-      expect(res.body.data[0]).toMatchObject({ acao: 'PEDIDO_CRIADO', entidade: 'Pedido', perfil: 'ATENDENTE', unidadeId: IDS.salvador, detalhes: { canalPedido: 'BALCAO' } });
+      expect(res.body.data[0]).toMatchObject({ acao: 'PEDIDO_CRIADO', entidade: 'Pedido', perfil: 'ATENDENTE', unidadeId: IDS.recife, detalhes: { canalPedido: 'BALCAO' } });
     });
 
     it('gerente só vê auditoria da própria unidade; cliente não acessa (403)', async () => {
@@ -115,34 +115,34 @@ describe('LGPD, auditoria e estoque', () => {
 
   describe('Estoque por unidade (Fluxo B)', () => {
     let gerente: string;
-    beforeAll(async () => (gerente = await ctx.token(USUARIOS.gerenteSalvador)));
+    beforeAll(async () => (gerente = await ctx.token(USUARIOS.gerenteRecife)));
 
     it('entrada de mercadoria atualiza saldo e gera histórico', async () => {
       const res = await ctx
         .http()
         .post('/estoque/movimentacoes')
         .set('Authorization', `Bearer ${gerente}`)
-        .send({ unidadeId: IDS.salvador, produtoId: IDS.cartola, tipo: 'ENTRADA', quantidade: 12, motivo: 'Recebimento NF 4512' })
+        .send({ unidadeId: IDS.recife, produtoId: IDS.cartola, tipo: 'ENTRADA', quantidade: 12, motivo: 'Recebimento NF 4512' })
         .expect(201);
       expect(res.body).toMatchObject({ tipo: 'ENTRADA', quantidade: 12, saldoAtual: 12 });
-      const historico = await ctx.http().get(`/estoque/movimentacoes?unidadeId=${IDS.salvador}&produtoId=${IDS.cartola}`).set('Authorization', `Bearer ${gerente}`).expect(200);
+      const historico = await ctx.http().get(`/estoque/movimentacoes?unidadeId=${IDS.recife}&produtoId=${IDS.cartola}`).set('Authorization', `Bearer ${gerente}`).expect(200);
       expect(historico.body.data[0]).toMatchObject({ tipo: 'ENTRADA', saldoApos: 12 });
     });
 
     it('saída sem motivo → 422; saída acima do saldo → 409', async () => {
-      const semMotivo = await ctx.http().post('/estoque/movimentacoes').set('Authorization', `Bearer ${gerente}`).send({ unidadeId: IDS.salvador, produtoId: IDS.cartola, tipo: 'SAIDA', quantidade: 1 }).expect(422);
+      const semMotivo = await ctx.http().post('/estoque/movimentacoes').set('Authorization', `Bearer ${gerente}`).send({ unidadeId: IDS.recife, produtoId: IDS.cartola, tipo: 'SAIDA', quantidade: 1 }).expect(422);
       esperarErroPadrao(semMotivo.body, 'MOTIVO_OBRIGATORIO');
       const acima = await ctx
         .http()
         .post('/estoque/movimentacoes')
         .set('Authorization', `Bearer ${gerente}`)
-        .send({ unidadeId: IDS.salvador, produtoId: IDS.cartola, tipo: 'SAIDA', quantidade: 500, motivo: 'Perda' })
+        .send({ unidadeId: IDS.recife, produtoId: IDS.cartola, tipo: 'SAIDA', quantidade: 500, motivo: 'Perda' })
         .expect(409);
       esperarErroPadrao(acima.body, 'ESTOQUE_INSUFICIENTE');
     });
 
     it('consulta de saldo com filtro de estoque baixo', async () => {
-      const res = await ctx.http().get(`/estoque?unidadeId=${IDS.salvador}&somenteBaixo=true`).set('Authorization', `Bearer ${gerente}`).expect(200);
+      const res = await ctx.http().get(`/estoque?unidadeId=${IDS.recife}&somenteBaixo=true`).set('Authorization', `Bearer ${gerente}`).expect(200);
       expect(res.body.data.every((e: { estoqueBaixo: boolean }) => e.estoqueBaixo)).toBe(true);
     });
   });

@@ -35,13 +35,13 @@ describe('Autenticação e autorização', () => {
     esperarErroPadrao(res.body, 'ACESSO_NEGADO');
   });
 
-  it('gerente de Fortaleza não movimenta estoque de Salvador → 403', async () => {
+  it('gerente de Fortaleza não movimenta estoque de Recife → 403', async () => {
     const token = await ctx.token(USUARIOS.gerenteFortaleza);
     const res = await ctx
       .http()
       .post('/estoque/movimentacoes')
       .set('Authorization', `Bearer ${token}`)
-      .send({ unidadeId: IDS.salvador, produtoId: IDS.bolodeRolo, tipo: 'ENTRADA', quantidade: 5 })
+      .send({ unidadeId: IDS.recife, produtoId: IDS.bolodeRolo, tipo: 'ENTRADA', quantidade: 5 })
       .expect(403);
     esperarErroPadrao(res.body, 'ACESSO_NEGADO');
   });

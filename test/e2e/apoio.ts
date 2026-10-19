@@ -19,10 +19,10 @@ export class RelogioFalso extends Relogio {
 
 export const USUARIOS = {
   admin: 'admin@raizesdonordeste.com.br',
-  gerenteSalvador: 'gerente.salvador@raizesdonordeste.com.br',
-  atendenteSalvador: 'atendente.salvador@raizesdonordeste.com.br',
-  cozinhaSalvador: 'cozinha.salvador@raizesdonordeste.com.br',
-  totemSalvador: 'totem01.salvador@raizesdonordeste.com.br',
+  gerenteRecife: 'gerente.recife@raizesdonordeste.com.br',
+  atendenteRecife: 'atendente.recife@raizesdonordeste.com.br',
+  cozinhaRecife: 'cozinha.recife@raizesdonordeste.com.br',
+  totemRecife: 'totem01.recife@raizesdonordeste.com.br',
   gerenteFortaleza: 'gerente.fortaleza@raizesdonordeste.com.br',
   ana: 'ana.souza@email.com',
   bruno: 'bruno.costa@email.com',
@@ -30,16 +30,19 @@ export const USUARIOS = {
 
 /** IDs do seed (ver src/infrastructure/database/seeds/dados-iniciais.ts). */
 export const IDS = {
-  salvador: 1,
+  recife: 1,
   fortaleza: 2,
   bh: 3,
   tapiocaCarneDeSol: 1,
   cuscuzComOvo: 3,
-  bolodeRolo: 6, // estoque 4 em Salvador
-  cartola: 7, // estoque 0 em Salvador
-  acaraje: 8, // só no cardápio de Salvador
+  baiaoDeDois: 5, // exige cozinha completa
+  bolodeRolo: 6, // estoque 4 em Recife
+  cartola: 7, // estoque 0 em Recife
+  arrumadinho: 8, // só no cardápio de Recife
   sucoDeCaja: 9,
   pamonha: 12, // sazonal: junho e julho
+  bolodeMacaxeira: 14,
+  cafeDaManhaCompleto: 15, // exige cozinha completa
   ana: 7,
   bruno: 8,
 };
@@ -93,7 +96,7 @@ export function esperarErroPadrao(corpo: Record<string, unknown>, codigo: string
 }
 
 export const pedidoApp = (itens = [{ produtoId: IDS.tapiocaCarneDeSol, quantidade: 1 }], extra: Record<string, unknown> = {}) => ({
-  unidadeId: IDS.salvador,
+  unidadeId: IDS.recife,
   canalPedido: 'APP',
   formaPagamento: 'PIX',
   itens,

@@ -58,7 +58,7 @@ describe('Campanhas promocionais', () => {
 describe('LGPD — mascaramento', () => {
   it('mascara e-mail e telefone', () => {
     expect(mascararEmail('ana.souza@email.com')).toBe('an***@email.com');
-    expect(mascararTelefone('(71) 99876-1234')).toBe('(**) *****-1234');
+    expect(mascararTelefone('(81) 99876-1234')).toBe('(**) *****-1234');
     expect(mascararEmail(null)).toBeNull();
   });
 });

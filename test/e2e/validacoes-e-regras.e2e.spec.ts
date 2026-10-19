@@ -7,7 +7,7 @@ describe('Validações, multicanalidade e regras de negócio', () => {
   beforeAll(async () => {
     ctx = await criarContexto();
     ana = await ctx.token(USUARIOS.ana);
-    atendente = await ctx.token(USUARIOS.atendenteSalvador);
+    atendente = await ctx.token(USUARIOS.atendenteRecife);
   });
   afterAll(() => ctx.fechar());
 
@@ -57,8 +57,8 @@ describe('Validações, multicanalidade e regras de negócio', () => {
     esperarErroPadrao(res.body, 'UNIDADE_NAO_ENCONTRADO');
   });
 
-  it('produto fora do cardápio da unidade (acarajé em Fortaleza) → 422', async () => {
-    const res = await criar(ana, pedidoApp([{ produtoId: IDS.acaraje, quantidade: 1 }], { unidadeId: IDS.fortaleza })).expect(422);
+  it('produto fora do cardápio da unidade (arrumadinho em Fortaleza) → 422', async () => {
+    const res = await criar(ana, pedidoApp([{ produtoId: IDS.arrumadinho, quantidade: 1 }], { unidadeId: IDS.fortaleza })).expect(422);
     esperarErroPadrao(res.body, 'PRODUTO_INDISPONIVEL_NA_UNIDADE');
   });
 
@@ -68,14 +68,14 @@ describe('Validações, multicanalidade e regras de negócio', () => {
     expect(res.body.details).toEqual([{ field: 'itens[1].quantidade', issue: 'Bolo de rolo (fatia): solicitado 10, disponível 4' }]);
 
     const admin = await ctx.token(USUARIOS.admin);
-    const estoque = await ctx.http().get(`/estoque?unidadeId=${IDS.salvador}&limit=100`).set('Authorization', `Bearer ${admin}`).expect(200);
+    const estoque = await ctx.http().get(`/estoque?unidadeId=${IDS.recife}&limit=100`).set('Authorization', `Bearer ${admin}`).expect(200);
     const tapioca = estoque.body.data.find((e: { produtoId: number }) => e.produtoId === IDS.tapiocaCarneDeSol);
     expect(tapioca.quantidade).toBe(60);
   });
 
   it('pedidos simultâneos disputando o último estoque: nunca vende além do saldo', async () => {
     const tentativas = await Promise.all(
-      Array.from({ length: 6 }, () => criar(atendente, { unidadeId: IDS.salvador, canalPedido: 'BALCAO', formaPagamento: 'PIX', itens: [{ produtoId: IDS.bolodeRolo, quantidade: 1 }] })),
+      Array.from({ length: 6 }, () => criar(atendente, { unidadeId: IDS.recife, canalPedido: 'BALCAO', formaPagamento: 'PIX', itens: [{ produtoId: IDS.bolodeRolo, quantidade: 1 }] })),
     );
     const status = tentativas.map((r) => r.status).sort();
     expect(status).toEqual([201, 201, 201, 201, 409, 409]);
@@ -91,7 +91,7 @@ describe('Validações, multicanalidade e regras de negócio', () => {
   });
 
   it('campanha restrita ao App não vale no balcão; campanha encerrada é rejeitada', async () => {
-    const balcao = await criar(atendente, { unidadeId: IDS.salvador, canalPedido: 'BALCAO', formaPagamento: 'PIX', codigoCampanha: 'APPRAIZ10', itens: [{ produtoId: IDS.tapiocaCarneDeSol, quantidade: 2 }] }).expect(422);
+    const balcao = await criar(atendente, { unidadeId: IDS.recife, canalPedido: 'BALCAO', formaPagamento: 'PIX', codigoCampanha: 'APPRAIZ10', itens: [{ produtoId: IDS.tapiocaCarneDeSol, quantidade: 2 }] }).expect(422);
     expect(balcao.body.details[0].issue).toContain('APP');
     const encerrada = await criar(ana, pedidoApp([{ produtoId: IDS.tapiocaCarneDeSol, quantidade: 2 }], { codigoCampanha: 'ARRAIA2026' })).expect(422);
     expect(encerrada.body.details[0].issue).toContain('vigência');
@@ -104,9 +104,9 @@ describe('Validações, multicanalidade e regras de negócio', () => {
   });
 
   it('filtro por canal: GET /pedidos?canalPedido=TOTEM retorna só pedidos do totem', async () => {
-    const totem = await ctx.token(USUARIOS.totemSalvador);
-    await criar(totem, { unidadeId: IDS.salvador, canalPedido: 'TOTEM', formaPagamento: 'PIX', itens: [{ produtoId: IDS.cuscuzComOvo, quantidade: 1 }] }).expect(201);
-    const gerente = await ctx.token(USUARIOS.gerenteSalvador);
+    const totem = await ctx.token(USUARIOS.totemRecife);
+    await criar(totem, { unidadeId: IDS.recife, canalPedido: 'TOTEM', formaPagamento: 'PIX', itens: [{ produtoId: IDS.cuscuzComOvo, quantidade: 1 }] }).expect(201);
+    const gerente = await ctx.token(USUARIOS.gerenteRecife);
     const res = await ctx.http().get('/pedidos?canalPedido=TOTEM').set('Authorization', `Bearer ${gerente}`).expect(200);
     expect(res.body.data.length).toBeGreaterThan(0);
     expect(res.body.data.every((p: { canalPedido: string }) => p.canalPedido === 'TOTEM')).toBe(true);
@@ -118,7 +118,7 @@ describe('Validações, multicanalidade e regras de negócio', () => {
   });
 
   it('cardápio mostra disponibilidade e motivo (sem estoque, fora de temporada)', async () => {
-    const res = await ctx.http().get(`/unidades/${IDS.salvador}/cardapio`).expect(200);
+    const res = await ctx.http().get(`/unidades/${IDS.recife}/cardapio`).expect(200);
     const porId = (id: number) => res.body.data.find((i: { produtoId: number }) => i.produtoId === id);
     expect(porId(IDS.cartola)).toMatchObject({ disponivel: false, motivoIndisponibilidade: 'SEM_ESTOQUE' });
     expect(porId(IDS.pamonha)).toMatchObject({ disponivel: false, motivoIndisponibilidade: 'FORA_DE_TEMPORADA' });

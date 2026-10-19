@@ -14,14 +14,14 @@ describe('Fluxo A — Pedido → Pagamento mock → Status', () => {
   beforeAll(async () => {
     ctx = await criarContexto();
     ana = await ctx.token(USUARIOS.ana);
-    cozinha = await ctx.token(USUARIOS.cozinhaSalvador);
-    atendente = await ctx.token(USUARIOS.atendenteSalvador);
+    cozinha = await ctx.token(USUARIOS.cozinhaRecife);
+    atendente = await ctx.token(USUARIOS.atendenteRecife);
   });
   afterAll(() => ctx.fechar());
 
   const saldoTapioca = async () => {
     const admin = await ctx.token(USUARIOS.admin);
-    const res = await ctx.http().get(`/estoque?unidadeId=${IDS.salvador}&limit=100`).set('Authorization', `Bearer ${admin}`).expect(200);
+    const res = await ctx.http().get(`/estoque?unidadeId=${IDS.recife}&limit=100`).set('Authorization', `Bearer ${admin}`).expect(200);
     return res.body.data.find((e: { produtoId: number }) => e.produtoId === IDS.tapiocaCarneDeSol).quantidade as number;
   };
 
@@ -145,7 +145,7 @@ describe('Fluxo A — Pedido → Pagamento mock → Status', () => {
       .http()
       .post('/pedidos')
       .set('Authorization', `Bearer ${atendente}`)
-      .send({ unidadeId: IDS.salvador, canalPedido: 'BALCAO', formaPagamento: 'CARTAO_DEBITO', clienteId: IDS.ana, itens: [{ produtoId: IDS.tapiocaCarneDeSol, quantidade: 3 }] })
+      .send({ unidadeId: IDS.recife, canalPedido: 'BALCAO', formaPagamento: 'CARTAO_DEBITO', clienteId: IDS.ana, itens: [{ produtoId: IDS.tapiocaCarneDeSol, quantidade: 3 }] })
       .expect(201);
     expect(criado.body.canalPedido).toBe('BALCAO');
     const pago = await ctx.http().post('/pagamentos').set('Authorization', `Bearer ${atendente}`).send({ pedidoId: criado.body.id }).expect(201);
@@ -176,12 +176,12 @@ describe('Fluxo A — Pedido → Pagamento mock → Status', () => {
   });
 
   it('pedido do totem: canal TOTEM, cliente opcional e acúmulo só com consentimento', async () => {
-    const totem = await ctx.token(USUARIOS.totemSalvador);
+    const totem = await ctx.token(USUARIOS.totemRecife);
     const criado = await ctx
       .http()
       .post('/pedidos')
       .set('Authorization', `Bearer ${totem}`)
-      .send({ unidadeId: IDS.salvador, canalPedido: 'TOTEM', formaPagamento: 'CARTAO_CREDITO', clienteId: IDS.bruno, itens: [{ produtoId: IDS.cuscuzComOvo, quantidade: 2 }] })
+      .send({ unidadeId: IDS.recife, canalPedido: 'TOTEM', formaPagamento: 'CARTAO_CREDITO', clienteId: IDS.bruno, itens: [{ produtoId: IDS.cuscuzComOvo, quantidade: 2 }] })
       .expect(201);
     const pago = await ctx.http().post('/pagamentos').set('Authorization', `Bearer ${totem}`).send({ pedidoId: criado.body.id }).expect(201);
     expect(pago.body.pontosCreditados).toBe(0); // Bruno não consentiu com o programa

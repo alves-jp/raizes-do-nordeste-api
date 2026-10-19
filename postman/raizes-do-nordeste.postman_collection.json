@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Raízes do Nordeste API — Plano de Testes",
-    "description": "Coleção do plano de testes (T01–T36) da API da Rede Raízes do Nordeste.\n\nPré-requisitos: API rodando em {{baseUrl}} com o seed aplicado (npm run setup).\nExecute a coleção INTEIRA e na ORDEM (Runner do Postman ou `npm run test:postman`): os tokens e IDs são encadeados por variáveis.\nPode ser executada várias vezes seguidas (e-mails e chaves de idempotência são gerados a cada execução).",
+    "description": "Coleção do plano de testes (T01–T45) da API da Rede Raízes do Nordeste.\n\nPré-requisitos: API rodando em {{baseUrl}} com o seed aplicado (npm run setup).\nExecute a coleção INTEIRA e na ORDEM (Runner do Postman ou `npm run test:postman`): os tokens e IDs são encadeados por variáveis.\nPode ser executada várias vezes seguidas (e-mails e chaves de idempotência são gerados a cada execução).",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -57,7 +57,7 @@
           ]
         },
         {
-          "name": "Setup - Login atendente Salvador",
+          "name": "Setup - Login atendente Recife",
           "request": {
             "method": "POST",
             "header": [
@@ -78,7 +78,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"atendente.salvador@raizesdonordeste.com.br\",\n  \"senha\": \"Raizes@2026\"\n}",
+              "raw": "{\n  \"email\": \"atendente.recife@raizesdonordeste.com.br\",\n  \"senha\": \"Raizes@2026\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -105,7 +105,7 @@
           ]
         },
         {
-          "name": "Setup - Login cozinha Salvador",
+          "name": "Setup - Login cozinha Recife",
           "request": {
             "method": "POST",
             "header": [
@@ -126,7 +126,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"cozinha.salvador@raizesdonordeste.com.br\",\n  \"senha\": \"Raizes@2026\"\n}",
+              "raw": "{\n  \"email\": \"cozinha.recife@raizesdonordeste.com.br\",\n  \"senha\": \"Raizes@2026\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -153,7 +153,7 @@
           ]
         },
         {
-          "name": "Setup - Login gerente Salvador",
+          "name": "Setup - Login gerente Recife",
           "request": {
             "method": "POST",
             "header": [
@@ -174,7 +174,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"gerente.salvador@raizesdonordeste.com.br\",\n  \"senha\": \"Raizes@2026\"\n}",
+              "raw": "{\n  \"email\": \"gerente.recife@raizesdonordeste.com.br\",\n  \"senha\": \"Raizes@2026\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -249,7 +249,7 @@
           ]
         },
         {
-          "name": "Setup - Login totem Salvador",
+          "name": "Setup - Login totem Recife",
           "request": {
             "method": "POST",
             "header": [
@@ -270,7 +270,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"totem01.salvador@raizesdonordeste.com.br\",\n  \"senha\": \"Raizes@2026\"\n}",
+              "raw": "{\n  \"email\": \"totem01.recife@raizesdonordeste.com.br\",\n  \"senha\": \"Raizes@2026\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -350,7 +350,7 @@
       "name": "01 - Cardápio",
       "item": [
         {
-          "name": "T02 - Cardápio da unidade Salvador",
+          "name": "T02 - Cardápio da unidade Recife",
           "request": {
             "method": "GET",
             "header": [],
@@ -1210,7 +1210,7 @@
       "name": "06 - Estoque",
       "item": [
         {
-          "name": "T19 - Entrada de estoque (gerente Salvador)",
+          "name": "T19 - Entrada de estoque (gerente Recife)",
           "request": {
             "method": "POST",
             "header": [
@@ -1261,7 +1261,7 @@
           ]
         },
         {
-          "name": "T20 - Gerente de Fortaleza movimentando Salvador",
+          "name": "T20 - Gerente de Fortaleza movimentando Recife",
           "request": {
             "method": "POST",
             "header": [
@@ -2096,6 +2096,461 @@
           ]
         }
       ]
+    },
+    {
+      "name": "10 - Estudo de caso: unidades, relatórios e segmentação",
+      "item": [
+        {
+          "name": "Setup - Login cliente Bruno (sem consentimentos)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"bruno.costa@email.com\",\n  \"senha\": \"Raizes@2026\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Setup — token do Bruno\", () => {",
+                  "      pm.response.to.have.status(200);",
+                  "      pm.collectionVariables.set(\"tokenBruno\", pm.response.json().accessToken);",
+                  "    });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "T37 - Unidades com região e formato (BH reduzida)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/unidades",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "unidades"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"T37 — 200 Recife é a unidade 1 e BH opera em formato REDUZIDA\", () => {",
+                  "      pm.response.to.have.status(200);",
+                  "      const u = pm.response.json().data;",
+                  "      pm.expect(u[0]).to.include({ cidade: \"Recife\", uf: \"PE\", regiao: \"NORDESTE\", formato: \"COMPLETA\" });",
+                  "      pm.expect(u.find((x) => x.id === 3)).to.include({ regiao: \"SUDESTE\", formato: \"REDUZIDA\" });",
+                  "    });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "T38 - Produto que exige cozinha completa em unidade reduzida",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/unidades/3/cardapio/5",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "unidades",
+                "3",
+                "cardapio",
+                "5"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"preco\": 36.9\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"T38 — 422 PRODUTO_EXIGE_COZINHA_COMPLETA\", () => {",
+                  "      pm.response.to.have.status(422);",
+                  "      pm.expect(pm.response.json().error).to.eql(\"PRODUTO_EXIGE_COZINHA_COMPLETA\");",
+                  "    });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "T39 - Relatório de vendas por região (matriz)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/relatorios/vendas?agruparPor=REGIAO",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "relatorios",
+                "vendas"
+              ],
+              "query": [
+                {
+                  "key": "agruparPor",
+                  "value": "REGIAO"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"T39 — 200 consolidado por região com financeiro e meta\", () => {",
+                  "      pm.response.to.have.status(200);",
+                  "      const b = pm.response.json();",
+                  "      pm.expect(b.escopo).to.eql(\"REDE\");",
+                  "      const ne = b.grupos.find((g) => g.regiao === \"NORDESTE\");",
+                  "      pm.expect(ne).to.include.keys(\"faturamentoBruto\", \"descontosCampanhas\", \"faturamentoLiquido\", \"ticketMedio\", \"metaMensal\", \"percentualDaMeta\");",
+                  "      pm.expect(ne.pedidosPagos).to.be.above(0);",
+                  "      pm.expect(b.grupos.map((g) => g.regiao)).to.include(\"SUDESTE\");",
+                  "    });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "T40 - Produtos mais vendidos (gerente Recife)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenGerente}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/relatorios/produtos-mais-vendidos?limite=5",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "relatorios",
+                "produtos-mais-vendidos"
+              ],
+              "query": [
+                {
+                  "key": "limite",
+                  "value": "5"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"T40 — 200 ranking restrito à unidade do gerente\", () => {",
+                  "      pm.response.to.have.status(200);",
+                  "      const b = pm.response.json();",
+                  "      pm.expect(b.escopo).to.eql({ unidadeId: 1 });",
+                  "      pm.expect(b.produtos.length).to.be.above(0);",
+                  "      pm.expect(b.produtos[0].posicao).to.eql(1);",
+                  "    });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "T41 - Gerente pedindo relatório de outra unidade",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenGerente}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/relatorios/vendas?unidadeId=2",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "relatorios",
+                "vendas"
+              ],
+              "query": [
+                {
+                  "key": "unidadeId",
+                  "value": "2"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"T41 — 403 escopo por unidade\", () => {",
+                  "      pm.response.to.have.status(403);",
+                  "      pm.expect(pm.response.json().error).to.eql(\"ACESSO_NEGADO\");",
+                  "    });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "T42 - Campanha segmentada por faixa etária (Ana, 23 anos)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAna}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/pedidos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pedidos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"unidadeId\": 1,\n  \"canalPedido\": \"APP\",\n  \"formaPagamento\": \"PIX\",\n  \"itens\": [\n    {\n      \"produtoId\": 1,\n      \"quantidade\": 1\n    }\n  ],\n  \"codigoCampanha\": \"UNIRAIZES\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"T42 — 201 desconto de 10% aplicado\", () => {",
+                  "      pm.response.to.have.status(201);",
+                  "      const b = pm.response.json();",
+                  "      pm.expect(b.codigoCampanha).to.eql(\"UNIRAIZES\");",
+                  "      pm.expect(b.descontoCampanha).to.eql(2.49);",
+                  "    });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "T43 - Campanha segmentada sem consentimento de marketing (Bruno)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenBruno}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/pedidos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pedidos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"unidadeId\": 1,\n  \"canalPedido\": \"APP\",\n  \"formaPagamento\": \"PIX\",\n  \"itens\": [\n    {\n      \"produtoId\": 1,\n      \"quantidade\": 1\n    }\n  ],\n  \"codigoCampanha\": \"UNIRAIZES\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"T43 — 422 CAMPANHA_NAO_APLICAVEL (exige MARKETING)\", () => {",
+                  "      pm.response.to.have.status(422);",
+                  "      const b = pm.response.json();",
+                  "      pm.expect(b.error).to.eql(\"CAMPANHA_NAO_APLICAVEL\");",
+                  "      pm.expect(b.details[0].issue).to.match(/MARKETING/);",
+                  "    });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "T44 - Nível de fidelidade e desconto progressivo",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAna}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/fidelidade/saldo",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "fidelidade",
+                "saldo"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"T44 — 200 nível, valor do ponto e próximo nível\", () => {",
+                  "      pm.response.to.have.status(200);",
+                  "      const b = pm.response.json();",
+                  "      pm.expect([\"BRONZE\", \"PRATA\", \"OURO\"]).to.include(b.nivel);",
+                  "      pm.expect(b.regras.niveis).to.have.length(3);",
+                  "      pm.expect(b.valorDoPonto).to.be.at.least(0.1);",
+                  "    });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "T45 - Data de nascimento sem consentimento de marketing",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenBruno}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                "me"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dataNascimento\": \"1995-03-10\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"T45 — 422 CONSENTIMENTO_MARKETING_AUSENTE (LGPD)\", () => {",
+                  "      pm.response.to.have.status(422);",
+                  "      pm.expect(pm.response.json().error).to.eql(\"CONSENTIMENTO_MARKETING_AUSENTE\");",
+                  "    });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
     }
   ],
   "variable": [
@@ -2141,6 +2596,10 @@
     },
     {
       "key": "emailNovo",
+      "value": ""
+    },
+    {
+      "key": "tokenBruno",
       "value": ""
     }
   ]

@@ -26,6 +26,7 @@
     "test:unit": "jest --runInBand test/unit",
     "test:e2e": "jest --runInBand test/e2e",
     "test:postman": "newman run postman/raizes-do-nordeste.postman_collection.json -e postman/local.postman_environment.json",
+    "test:carga": "ts-node scripts/teste-de-carga.ts",
     "openapi:export": "ts-node scripts/exportar-openapi.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
@@ -54,6 +55,7 @@
     "@types/node": "^22.0.0",
     "@types/sql.js": "^1.4.11",
     "@types/supertest": "^6.0.2",
+    "autocannon": "^8.0.0",
     "jest": "^29.7.0",
     "newman": "^6.2.1",
     "supertest": "^7.1.0",
