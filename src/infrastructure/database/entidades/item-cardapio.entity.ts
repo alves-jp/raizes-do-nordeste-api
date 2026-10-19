@@ -2,10 +2,7 @@ import { Check, Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, U
 import { Produto } from './produto.entity';
 import { Unidade } from './unidade.entity';
 
-/**
- * Cardápio por unidade: quais produtos do catálogo cada loja vende e a que preço.
- * Permite cardápios diferentes entre regiões e preços locais.
- */
+/** Produto vendido por uma unidade, com preço local. */
 @Entity('itens_cardapio')
 @Unique('UQ_cardapio_unidade_produto', ['unidadeId', 'produtoId'])
 @Check('CHK_cardapio_preco', 'preco_centavos > 0')

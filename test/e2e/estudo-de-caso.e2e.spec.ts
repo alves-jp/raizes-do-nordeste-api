@@ -1,9 +1,6 @@
 import { Contexto, criarContexto, esperarErroPadrao, IDS, pedidoApp, USUARIOS } from './apoio';
 
-/**
- * Aderência ao estudo de caso oficial (rev. 0.3): diferenças entre unidades, receitas regionais,
- * relatórios da matriz, fidelidade progressiva por frequência e campanhas segmentadas com LGPD.
- */
+/** Aderência ao estudo de caso: unidades, relatórios, fidelidade e segmentação. */
 describe('Estudo de caso — unidades, relatórios, fidelidade e segmentação', () => {
   let ctx: Contexto;
   let admin: string;

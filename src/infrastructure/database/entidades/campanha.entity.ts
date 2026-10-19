@@ -2,7 +2,7 @@ import { Check, Column, CreateDateColumn, Entity, Index, JoinColumn, ManyToOne, 
 import { CanalPedido, NivelFidelidade } from '../../../domain/enums';
 import { Unidade } from './unidade.entity';
 
-/** Campanha promocional definida pela matriz e aplicada por código no pedido. */
+/** Campanha promocional aplicada por código no pedido. */
 @Entity('campanhas')
 @Check('CHK_campanha_percentual', 'percentual_desconto BETWEEN 1 AND 50')
 @Check('CHK_campanha_periodo', 'fim > inicio')

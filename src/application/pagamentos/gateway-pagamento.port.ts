@@ -1,19 +1,12 @@
 import { FormaPagamento } from '../../domain/enums';
 
-/**
- * Porta (contrato) do provedor externo de pagamentos.
- * A aplicação depende apenas desta abstração; a implementação concreta
- * (hoje um mock, amanhã um PSP real) fica na camada de infraestrutura.
- */
+/** Contrato do provedor externo. A implementação concreta fica na infraestrutura. */
 export interface SolicitacaoDeCobranca {
-  /** Referência única no nosso sistema (ex.: "pedido-12-pagamento-5"). */
+  /** Referência única no nosso sistema. */
   referencia: string;
   valorCentavos: number;
   forma: FormaPagamento;
-  /**
-   * Token de pagamento gerado pelo SDK do provedor no cliente (App/Totem/Web).
-   * O back-end nunca recebe nem armazena número de cartão (escopo PCI-DSS fora do sistema).
-   */
+  /** Token gerado no cliente. O back-end nunca recebe dados de cartão. */
   tokenPagamento: string;
 }
 
@@ -22,7 +15,7 @@ export interface RespostaDeCobranca {
   transacaoId: string;
   codigo: string;
   mensagem: string;
-  /** Payload bruto devolvido pelo provedor (para conciliação). */
+  /** Payload bruto do provedor, para conciliação. */
   payload: Record<string, unknown>;
 }
 

@@ -1,8 +1,4 @@
-/**
- * Produtos sazonais (ex.: pamonha e milho no período junino) só podem ser vendidos
- * entre mesInicio e mesFim (1 a 12, inclusive). A janela pode atravessar a virada
- * do ano (ex.: novembro a fevereiro).
- */
+/** Janela sazonal inclusiva (1-12), inclusive quando atravessa a virada do ano. */
 export function estaEmTemporada(
   produto: { sazonal: boolean; mesInicio: number | null; mesFim: number | null },
   data: Date,

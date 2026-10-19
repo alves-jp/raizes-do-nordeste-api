@@ -12,7 +12,7 @@ export const LIMITES_PEDIDO = {
   maxQuantidadePorItem: 20,
 } as const;
 
-/** Valida a lista de itens (itens repetidos são somados antes desta etapa). */
+/** Valida os limites do pedido (itens repetidos já consolidados). */
 export function validarItens(itens: { produtoId: number; quantidade: number }[]): void {
   if (itens.length > LIMITES_PEDIDO.maxItensDistintos) {
     throw new ErroDeDominio(
@@ -34,7 +34,7 @@ export function validarItens(itens: { produtoId: number; quantidade: number }[])
   });
 }
 
-/** Junta linhas do mesmo produto (ex.: o totem enviou o mesmo item duas vezes). */
+/** Consolida itens repetidos do mesmo produto. */
 export function consolidarItens<T extends { produtoId: number; quantidade: number }>(itens: T[]): { produtoId: number; quantidade: number }[] {
   const mapa = new Map<number, number>();
   for (const item of itens) mapa.set(item.produtoId, (mapa.get(item.produtoId) ?? 0) + item.quantidade);

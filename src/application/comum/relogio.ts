@@ -1,4 +1,4 @@
-/** Abstração do relógio: permite testar regras dependentes de data (sazonalidade, campanhas). */
+/** Relógio injetável para testar regras dependentes de data. */
 export abstract class Relogio {
   abstract agora(): Date;
 }

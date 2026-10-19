@@ -3,10 +3,7 @@ import { TipoTransacaoFidelidade } from '../../../domain/enums';
 import { Pedido } from './pedido.entity';
 import { Usuario } from './usuario.entity';
 
-/**
- * Extrato de pontos (ledger). O saldo é a soma dos pontos do cliente:
- * positivos (ACUMULO, ESTORNO_RESGATE) e negativos (RESGATE, ESTORNO_ACUMULO).
- */
+/** Extrato de pontos (ledger). O saldo é a soma das transações. */
 @Entity('transacoes_fidelidade')
 @Index(['clienteId', 'criadoEm'])
 export class TransacaoFidelidade {

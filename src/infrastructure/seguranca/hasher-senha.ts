@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 
-/** Hash de senha com bcrypt (salt aleatório embutido, custo 10). */
+/** Bcrypt com custo 10. */
 @Injectable()
 export class HasherDeSenha {
   private static readonly CUSTO = 10;

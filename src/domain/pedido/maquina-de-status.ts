@@ -2,17 +2,9 @@ import { Perfil, StatusPedido } from '../enums';
 import { ErroDeDominio, NaturezaErro } from '../erros';
 
 /**
- * Máquina de estados do pedido.
- *
- *   AGUARDANDO_PAGAMENTO ──(pagamento aprovado)──► PAGO ──► EM_PREPARO ──► PRONTO ──► ENTREGUE
- *          │   ▲                                    │            │
- *          │   └──(nova tentativa)── PAGAMENTO_RECUSADO          │
- *          └────────────┬───────────────┴───────────┴────────────┘
- *                       ▼
- *                   CANCELADO
- *
- * - PAGO só é atingido pelo fluxo de pagamento (nunca manualmente).
- * - ENTREGUE e CANCELADO são estados finais.
+ * Máquina de estados do pedido. O fluxo normal é AGUARDANDO_PAGAMENTO, PAGO,
+ * EM_PREPARO, PRONTO e ENTREGUE. PAGAMENTO_RECUSADO pode ser retentado e CANCELADO
+ * encerra o pedido. PAGO só vem do pagamento, e ENTREGUE e CANCELADO são finais.
  */
 
 /** Transições operacionais (feitas pela equipe da unidade via PATCH /pedidos/{id}/status). */
@@ -28,10 +20,7 @@ export const STATUS_PAGAVEIS = [StatusPedido.AGUARDANDO_PAGAMENTO, StatusPedido.
 
 export const STATUS_FINAIS = [StatusPedido.ENTREGUE, StatusPedido.CANCELADO];
 
-/**
- * Valida uma transição operacional. Lança CONFLITO se a transição não existe a partir
- * do status atual e PROIBIDO se existe, mas o perfil não pode executá-la.
- */
+/** Lança CONFLITO para transição inválida e PROIBIDO para perfil sem permissão. */
 export function validarTransicaoOperacional(atual: StatusPedido, desejado: StatusPedido, perfil: Perfil): void {
   const possiveis = TRANSICOES_OPERACIONAIS[atual] ?? [];
   const transicao = possiveis.find((t) => t.para === desejado);
@@ -54,12 +43,7 @@ export function validarTransicaoOperacional(atual: StatusPedido, desejado: Statu
   }
 }
 
-/**
- * Regras de cancelamento:
- * - CLIENTE: só o próprio pedido e só antes do pagamento ser aprovado.
- * - ATENDENTE/TOTEM: antes do preparo (inclui pedido PAGO, com estorno).
- * - GERENTE/ADMIN: até o pedido ficar PRONTO (inclui EM_PREPARO).
- */
+/** CLIENTE e TOTEM cancelam antes do pagamento, ATENDENTE até PAGO e GERENTE/ADMIN até PRONTO. */
 export function validarCancelamento(atual: StatusPedido, perfil: Perfil): void {
   if (STATUS_FINAIS.includes(atual)) {
     throw new ErroDeDominio(

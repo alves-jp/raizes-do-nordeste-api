@@ -51,7 +51,7 @@ export class EstoqueService {
     );
   }
 
-  /** Entrada (recebimento) ou saída manual (perda/descarte) — sempre com rastro. */
+  /** Movimentação manual. Saídas exigem motivo e tudo é auditado. */
   async movimentar(dados: NovaMovimentacao, ator: Ator) {
     garantirAcessoAUnidade(ator, dados.unidadeId);
     if (dados.tipo === TipoMovimentacaoEstoque.SAIDA && !dados.motivo?.trim()) {
@@ -145,12 +145,7 @@ export class EstoqueService {
     );
   }
 
-  // ---- Usados pelo fluxo de pedidos, dentro da transação do pedido ----
-
-  /**
-   * Baixa o estoque de todos os itens do pedido. Se QUALQUER item não tiver saldo,
-   * nada é baixado (a transação inteira é desfeita) e todos os itens faltantes são informados.
-   */
+  /** Baixa todos os itens. Se faltar qualquer um, nada é baixado. */
   async reservarParaPedido(em: EntityManager, unidadeId: number, pedidoId: number, itens: { produtoId: number; quantidade: number; nome: string }[], ator: Ator) {
     const estoques = await em.find(Estoque, { where: { unidadeId, produtoId: In(itens.map((i) => i.produtoId)) } });
     const faltas: DetalheErro[] = [];

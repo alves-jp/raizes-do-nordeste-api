@@ -5,10 +5,7 @@ export interface ContextoRequisicao {
   ip: string | null;
 }
 
-/**
- * Guarda requestId e IP da requisição corrente sem precisar repassá-los por
- * todos os métodos — usados na trilha de auditoria e no JSON de erro.
- */
+/** requestId e IP da requisição corrente para auditoria e erros. */
 export const armazenamentoDeContexto = new AsyncLocalStorage<ContextoRequisicao>();
 
 export const contextoAtual = (): ContextoRequisicao | undefined => armazenamentoDeContexto.getStore();

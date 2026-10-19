@@ -74,10 +74,7 @@ export class AuthService {
     };
   }
 
-  /**
-   * Valida o token e confirma que o usuário continua ativo (um usuário anonimizado
-   * ou desativado perde o acesso imediatamente, mesmo com token ainda válido).
-   */
+  /** Valida o JWT e confirma que o usuário segue ativo e não anonimizado. */
   async autenticar(token: string): Promise<Ator> {
     let conteudo: ConteudoDoToken;
     try {

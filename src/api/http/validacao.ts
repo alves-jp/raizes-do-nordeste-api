@@ -10,12 +10,7 @@ function achatar(erros: ValidationError[], prefixo = ''): DetalheErro[] {
   });
 }
 
-/**
- * Validação global dos DTOs:
- * - whitelist + forbidNonWhitelisted: campos desconhecidos são rejeitados (evita mass assignment);
- * - transform: converte query/params para os tipos declarados.
- * Falhas → 422 VALIDACAO com a lista de campos problemáticos.
- */
+/** Validação global: rejeita campos desconhecidos e converte tipos. */
 export const pipeDeValidacao = new ValidationPipe({
   whitelist: true,
   forbidNonWhitelisted: true,
@@ -28,7 +23,7 @@ export const pipeDeValidacao = new ValidationPipe({
     }))),
 });
 
-/** IDs no path: inteiros positivos; caso contrário 400. */
+/** IDs no path precisam ser inteiros positivos. Caso contrário, 400. */
 @Injectable()
 export class IdPipe implements PipeTransform<string, number> {
   transform(valor: string, meta: ArgumentMetadata): number {

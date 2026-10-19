@@ -26,11 +26,7 @@ export interface CorpoDeErro {
   requestId: string | null;
 }
 
-/**
- * Filtro global: converte qualquer exceção no JSON padronizado.
- * Erros inesperados viram 500 genérico — a mensagem interna e o stack trace vão só para o log,
- * nunca para o cliente (evita vazar detalhes de implementação).
- */
+/** Filtro global. Converte exceções no JSON padrão e transforma erros internos em 500. */
 @Catch()
 export class FiltroDeErros implements ExceptionFilter {
   private readonly logger = new Logger('Erros');

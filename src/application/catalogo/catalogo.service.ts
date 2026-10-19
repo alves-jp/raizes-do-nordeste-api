@@ -24,7 +24,7 @@ export interface DadosProduto {
   ativo?: boolean;
 }
 
-/** Visão pública da unidade (a meta mensal é informação interna e só aparece nos relatórios). */
+/** Visão pública da unidade (a meta mensal é interna). */
 export function visaoDaUnidade(u: Unidade) {
   return {
     id: u.id,
@@ -52,8 +52,6 @@ export class CatalogoService {
     private readonly relogio: Relogio,
   ) {}
 
-  // ------------------------------- Unidades -------------------------------
-
   async listarUnidades(paginacao: Paginacao): Promise<Pagina<ReturnType<typeof visaoDaUnidade>>> {
     const [itens, total] = await this.unidades.findAndCount({ where: { ativa: true }, order: { id: 'ASC' }, ...deslocamento(paginacao) });
     return paginar(itens.map(visaoDaUnidade), total, paginacao);
@@ -69,10 +67,7 @@ export class CatalogoService {
     return unidade;
   }
 
-  /**
-   * Cardápio da unidade com disponibilidade calculada em tempo real:
-   * item pausado, produto inativo, fora de temporada ou sem estoque aparece como indisponível.
-   */
+  /** Cardápio com disponibilidade calculada (pausa, inatividade, temporada e estoque). */
   async cardapioDaUnidade(unidadeId: number, filtros: { categoria?: CategoriaProduto; somenteDisponiveis?: boolean }, paginacao: Paginacao) {
     const unidade = await this.obterUnidade(unidadeId);
     const qb = this.cardapio
@@ -118,7 +113,7 @@ export class CatalogoService {
     return null;
   }
 
-  /** Gerente (da própria unidade) ou ADMIN inclui/atualiza um produto no cardápio da unidade. */
+  /** Inclui/atualiza item do cardápio (GERENTE da unidade ou ADMIN). */
   async definirItemDoCardapio(
     unidadeId: number,
     produtoId: number,
@@ -163,8 +158,6 @@ export class CatalogoService {
       };
     });
   }
-
-  // ------------------------------- Produtos -------------------------------
 
   async listarProdutos(filtros: { categoria?: CategoriaProduto }, paginacao: Paginacao): Promise<Pagina<Produto>> {
     const where = filtros.categoria ? { categoria: filtros.categoria } : {};

@@ -16,10 +16,10 @@ export interface CampanhaAvaliavel {
   idadeMaxima?: number | null;
 }
 
-/** Dados do cliente usados SOMENTE na avaliação de campanhas segmentadas (não são persistidos no pedido). */
+/** Dados do cliente usados só na avaliação de campanhas (não são persistidos). */
 export interface PerfilDoCliente {
   nivel: NivelFidelidade;
-  /** Idade calculada na hora a partir da data de nascimento opcional; nulo se não informada. */
+  /** Idade calculada na hora a partir da data de nascimento opcional. Nulo se não informada. */
   idade: number | null;
   /** Segmentação é perfilamento para marketing: exige consentimento MARKETING vigente. */
   consentiuMarketing: boolean;
@@ -37,11 +37,8 @@ export interface ContextoDoPedido {
 }
 
 /**
- * Promoções/campanhas da matriz: desconto percentual aplicado por código promocional.
- * Uma campanha pode ser restrita a uma unidade, a um canal (ex.: só APP — estímulo
- * à migração de canal) e a um valor mínimo de pedido. Uma campanha por pedido.
- * Campanhas SEGMENTADAS (nível de fidelidade e/ou faixa etária) só valem para cliente
- * identificado e com consentimento MARKETING vigente (LGPD, art. 7º, I).
+ * Campanha por código. Pode restringir unidade, canal e valor mínimo, e vale uma por pedido.
+ * Campanhas segmentadas por nível ou idade exigem cliente identificado e consentimento MARKETING.
  */
 export function calcularDescontoDeCampanha(campanha: CampanhaAvaliavel, ctx: ContextoDoPedido): number {
   const rejeitar = (issue: string) =>

@@ -56,7 +56,7 @@ export interface Contexto {
   fechar: () => Promise<void>;
 }
 
-/** Sobe a aplicação completa com banco SQLite EM MEMÓRIA, migrations e seed — isolada por arquivo de teste. */
+/** Sobe a aplicação completa com banco SQLite em memória, migrations e seed. Cada arquivo de teste tem seu próprio contexto. */
 export async function criarContexto(): Promise<Contexto> {
   Logger.overrideLogger(false);
   const relogio = new RelogioFalso();

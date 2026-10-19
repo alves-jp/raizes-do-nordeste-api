@@ -5,12 +5,7 @@ import { ErroDeDominio, NaturezaErro } from '../../domain/erros';
 import { AuthService } from '../../application/auth/auth.service';
 import { CHAVE_PERFIS, CHAVE_PUBLICO } from './decoradores';
 
-/**
- * Guard global: (1) autenticação por JWT Bearer e (2) autorização por perfil.
- * - sem token / token inválido → 401
- * - perfil fora da lista da rota → 403
- * Regras de ESCOPO (ex.: gerente só da própria unidade) ficam na camada de aplicação.
- */
+/** Guard global de autenticação JWT e autorização por perfil. O escopo fica na aplicação. */
 @Injectable()
 export class AutenticacaoGuard implements CanActivate {
   constructor(

@@ -1,7 +1,6 @@
 /**
- * Gera docs/openapi.json a partir do código (o mesmo contrato servido em /docs).
- * Usado pela página estática docs/swagger/index.html, publicável no GitHub Pages.
- *   npm run openapi:export
+ * Gera docs/openapi.json a partir do código para a página estática do Swagger.
+ * Use npm run openapi:export.
  */
 import 'reflect-metadata';
 import { Logger } from '@nestjs/common';

@@ -3,12 +3,7 @@ import { GatewayIndisponivelError } from './gateway-pagamento.port';
 
 const logger = new Logger('ChamadaResiliente');
 
-/**
- * Tolerância a falhas na integração externa:
- * - timeout: não deixa a requisição do cliente presa esperando o provedor;
- * - nova tentativa com espera crescente (backoff) apenas em falhas TRANSITÓRIAS
- *   (timeout/5xx), nunca em recusa — recusa é resposta de negócio, não erro.
- */
+/** Timeout + retry com backoff apenas em falhas transitórias (nunca em recusa). */
 export async function chamarComResiliencia<T>(
   operacao: () => Promise<T>,
   opcoes: { timeoutMs: number; tentativasExtras: number; descricao: string },

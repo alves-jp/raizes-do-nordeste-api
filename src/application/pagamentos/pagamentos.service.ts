@@ -30,17 +30,9 @@ export interface ResultadoDoPagamento {
 }
 
 /**
- * Fluxo crítico — pagamento via provedor externo (mock):
- *
- *  1. valida o pedido e registra a tentativa como PENDENTE (transação curta);
- *  2. chama o provedor FORA de transação, com timeout e nova tentativa em falha transitória;
- *  3. registra o retorno e atualiza o pedido (transação curta):
- *     APROVADO → pedido PAGO + pontos de fidelidade;
- *     RECUSADO → pedido PAGAMENTO_RECUSADO (cliente pode tentar de novo) → HTTP 402;
- *     sem resposta → tentativa FALHA_COMUNICACAO, pedido inalterado → HTTP 503.
- *
- * Idempotência: o header Idempotency-Key faz com que um reenvio (ex.: totem sem rede)
- * devolva o mesmo resultado em vez de cobrar duas vezes.
+ * Registra a tentativa, chama o provedor fora da transação e grava o retorno.
+ * Aprovado deixa o pedido PAGO e credita pontos. Recusado deixa PAGAMENTO_RECUSADO.
+ * Sem resposta registra FALHA_COMUNICACAO. Idempotency-Key evita cobrança duplicada.
  */
 @Injectable()
 export class PagamentosService {
@@ -54,7 +46,6 @@ export class PagamentosService {
   ) {}
 
   async solicitar(dados: SolicitacaoDePagamento, ator: Ator, chaveIdempotencia?: string): Promise<ResultadoDoPagamento> {
-    // 1) Validação + registro da tentativa
     const etapa1 = await this.uow.executar(async (em) => {
       if (chaveIdempotencia) {
         const anterior = await em.findOne(Pagamento, { where: { chaveIdempotencia } });
@@ -91,7 +82,6 @@ export class PagamentosService {
     if ('repetido' in etapa1 && etapa1.repetido) return this.reproduzir(etapa1.repetido);
     const { tentativa, pedido } = etapa1 as { tentativa: Pagamento; pedido: Pedido };
 
-    // 2) Chamada ao provedor externo, fora da transação
     let resposta: RespostaDeCobranca | null = null;
     try {
       resposta = await chamarComResiliencia(
@@ -108,7 +98,6 @@ export class PagamentosService {
       if (!(erro instanceof GatewayIndisponivelError)) throw erro;
     }
 
-    // 3) Registro do retorno
     if (!resposta) return this.registrarFalhaDeComunicacao(tentativa, pedido, ator);
 
     const resultado = await this.uow.executar(async (em) => {
@@ -174,8 +163,6 @@ export class PagamentosService {
     return itens.map(visaoDoPagamento);
   }
 
-  // ------------------------------ auxiliares ------------------------------
-
   private garantirPagavel(pedido: Pedido) {
     if (STATUS_PAGAVEIS.includes(pedido.status)) return;
     if (pedido.status === StatusPedido.CANCELADO) {
@@ -225,7 +212,7 @@ export class PagamentosService {
     );
   }
 
-  /** Reenvio com a mesma Idempotency-Key: devolve o resultado original, sem nova cobrança. */
+  /** Reenvio idempotente: devolve o resultado original sem nova cobrança. */
   private async reproduzir(pagamento: Pagamento): Promise<ResultadoDoPagamento> {
     if (pagamento.status === StatusPagamento.RECUSADO) throw this.erroDeRecusa(pagamento);
     if (pagamento.status === StatusPagamento.PENDENTE) {

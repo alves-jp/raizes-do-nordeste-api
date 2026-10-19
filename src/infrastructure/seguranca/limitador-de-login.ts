@@ -1,12 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ambiente } from '../config/ambiente';
 
-/**
- * Proteção contra força bruta no login: após N falhas para o mesmo e-mail dentro da
- * janela, o e-mail fica bloqueado por alguns minutos (HTTP 429).
- * Mantido em memória — suficiente para uma instância; com várias instâncias,
- * o mesmo contrato iria para um Redis.
- */
+/** Bloqueia o e-mail após N falhas. Em memória, ou Redis com múltiplas instâncias. */
 @Injectable()
 export class LimitadorDeLogin {
   private readonly falhas = new Map<string, { quantidade: number; desde: number }>();
@@ -15,7 +10,6 @@ export class LimitadorDeLogin {
     return ambiente.loginBloqueioMinutos * 60_000;
   }
 
-  /** Retorna os segundos restantes de bloqueio, ou 0 se liberado. */
   segundosDeBloqueio(email: string, agora = Date.now()): number {
     const registro = this.falhas.get(email);
     if (!registro) return 0;

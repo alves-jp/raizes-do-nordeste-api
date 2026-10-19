@@ -1,8 +1,4 @@
-/**
- * Erros de domínio. A camada de domínio não conhece HTTP: cada erro declara
- * apenas a sua NATUREZA. A camada de API (filtro global) traduz a natureza
- * para o status code e para o JSON padronizado de erro.
- */
+/** Erros de domínio declaram a natureza. A API traduz para HTTP e JSON padrão. */
 export enum NaturezaErro {
   REQUISICAO_INVALIDA = 'REQUISICAO_INVALIDA', // 400
   VALIDACAO = 'VALIDACAO', // 422

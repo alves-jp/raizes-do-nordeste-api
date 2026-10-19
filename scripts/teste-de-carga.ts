@@ -1,19 +1,12 @@
 /**
- * Teste de carga do horário de pico (requisito não funcional de desempenho e disponibilidade).
+ * Teste de carga do horário de pico.
  *
- *   npm run test:carga               (15 s por cenário)
- *   DURACAO=5 npm run test:carga     (execução rápida)
+ * npm run test:carga            15 s por cenário
+ * DURACAO=5 npm run test:carga  execução rápida
  *
- * Sobe a API em memória (mesmas migrations e seed), aumenta o estoque da unidade Recife para
- * que a carga não esbarre na regra de estoque e executa, com o autocannon:
- *   A. CAPACIDADE (carga máxima, conexões sem limite de taxa): quantas requisições por segundo
- *      uma única instância suporta na leitura do cardápio e na criação de pedidos, sem erros;
- *   B. PICO PROJETADO ×10 (taxa fixa): leitura e escrita ao mesmo tempo, em 10 vezes o pico
- *      estimado da rede, medindo a latência percebida pelo cliente (p99).
- * Pico estimado: 30 unidades × 4 pedidos/min por unidade ≈ 2 pedidos/s e ≈ 20 consultas de
- * cardápio/s (10 consultas por pedido). Cenário B: 20 pedidos/s + 200 consultas/s.
- * Ao final confere a consistência (pedidos gravados = baixas de estoque = registros de auditoria)
- * e grava o relatório em docs/evidencias/teste-de-carga.md. Sai com código 1 se alguma meta falhar.
+ * Sobe a API em memória, eleva o estoque de Recife e mede dois cenários com autocannon:
+ * capacidade máxima de leitura e escrita, e pico projetado 10x (20 pedidos/s e 200 leituras/s).
+ * Ao final confere a consistência e grava o relatório em docs/evidencias/teste-de-carga.md.
  */
 import 'reflect-metadata';
 import { Logger } from '@nestjs/common';

@@ -2,10 +2,7 @@ import { Check, Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } 
 import { Pedido } from './pedido.entity';
 import { Produto } from './produto.entity';
 
-/**
- * Item do pedido. Guarda uma "fotografia" do nome e do preço no momento da compra,
- * para que mudanças futuras no cardápio não alterem pedidos já feitos.
- */
+/** Item do pedido com nome e preço congelados no momento da compra. */
 @Entity('itens_pedido')
 @Check('CHK_item_quantidade', 'quantidade > 0')
 export class ItemPedido {

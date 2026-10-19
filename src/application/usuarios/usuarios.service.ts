@@ -16,7 +16,7 @@ import { deslocamento, Pagina, paginar, Paginacao } from '../comum/paginacao';
 import { Relogio } from '../comum/relogio';
 import { FidelidadeService } from '../fidelidade/fidelidade.service';
 
-/** Versão vigente dos Termos de Uso e da Política de Privacidade. */
+/** Versão atual dos termos e da política. */
 export const VERSAO_TERMOS = 'v1.0';
 
 export interface NovoCliente {
@@ -147,11 +147,7 @@ export class UsuariosService {
     };
   }
 
-  /**
-   * Atualização dos dados opcionais pelo próprio titular (LGPD, art. 18, III — correção).
-   * A data de nascimento só é aceita com consentimento MARKETING vigente e serve apenas para
-   * campanhas por faixa etária; enviar null apaga o dado.
-   */
+  /** Atualiza telefone e data de nascimento. A data exige consentimento MARKETING. */
   async atualizarMeuPerfil(ator: Ator, dados: AtualizacaoDePerfil) {
     if (dados.dataNascimento) {
       const consentiu = await this.fidelidade.temConsentimento(ator.id, FinalidadeConsentimento.MARKETING);
@@ -189,7 +185,7 @@ export class UsuariosService {
     validarDataNascimento(dataNascimento, this.relogio.agora());
   }
 
-  /** Listagem administrativa com dados de contato MASCARADOS (minimização). */
+  /** Listagem administrativa com contatos mascarados. */
   async listar(filtros: { perfil?: Perfil; unidadeId?: number }, paginacao: Paginacao): Promise<Pagina<Record<string, unknown>>> {
     const where: Record<string, unknown> = {};
     if (filtros.perfil) where.perfil = filtros.perfil;
@@ -208,7 +204,7 @@ export class UsuariosService {
     );
   }
 
-  /** Dados pessoais completos de um usuário: acesso restrito ao ADMIN e sempre auditado. */
+  /** Dados completos, restritos ao ADMIN e auditados. */
   async obterDadosPessoais(id: number, ator: Ator) {
     const usuario = await this.buscar(id);
     await this.uow.executar((em) =>
@@ -259,7 +255,7 @@ export class UsuariosService {
     }));
   }
 
-  /** Concede ou revoga um consentimento (LGPD, art. 8º, §5º — revogação a qualquer momento). */
+  /** Concede/revoga consentimento (LGPD, art. 8º, §5º). */
   async registrarConsentimento(ator: Ator, finalidade: FinalidadeConsentimento, concedido: boolean) {
     return this.uow.executar(async (em) => {
       await em.insert(Consentimento, { usuarioId: ator.id, finalidade, concedido, versaoTermo: VERSAO_TERMOS, origem: 'PREFERENCIAS' });
@@ -285,7 +281,7 @@ export class UsuariosService {
     });
   }
 
-  /** Portabilidade/acesso (LGPD, art. 18, II e V): devolve todos os dados do titular. */
+  /** Exporta todos os dados do titular (LGPD, art. 18, II e V). */
   async exportarMeusDados(ator: Ator) {
     const usuario = await this.buscar(ator.id);
     const manager = this.usuarios.manager;
@@ -326,11 +322,7 @@ export class UsuariosService {
     };
   }
 
-  /**
-   * Eliminação a pedido do titular (LGPD, art. 18, VI) por ANONIMIZAÇÃO:
-   * os dados que identificam a pessoa são apagados de forma irreversível, mas os pedidos
-   * permanecem (sem vínculo identificável) para cumprir obrigações fiscais (art. 16, I).
-   */
+  /** Anonimiza a conta. Pedidos permanecem sem vínculo por obrigação fiscal. */
   async anonimizar(ator: Ator): Promise<void> {
     if (ator.perfil !== Perfil.CLIENTE) {
       throw new ErroDeDominio(NaturezaErro.PROIBIDO, 'ACESSO_NEGADO', 'Apenas contas de cliente podem ser anonimizadas por esta rota.');
@@ -377,7 +369,7 @@ export class UsuariosService {
     }
   }
 
-  /** Visão sem dados sensíveis: nunca expõe senhaHash. */
+  /** Visão sem dados sensíveis (nunca expõe senhaHash). */
   private visaoPublica(u: Usuario) {
     return { id: u.id, nome: u.nome, perfil: u.perfil, unidadeId: u.unidadeId, criadoEm: u.criadoEm };
   }

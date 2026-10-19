@@ -50,7 +50,7 @@ const somar = (a: Totais, b: Totais): Totais => ({
   estornadoCentavos: a.estornadoCentavos + b.estornadoCentavos,
 });
 
-/** Indicadores financeiros em reais, prontos para a API. */
+/** Converte os totais para reais. */
 const financeiro = (t: Totais) => ({
   pedidosPagos: t.pedidosPagos,
   pedidosCancelados: t.pedidosCancelados,
@@ -63,12 +63,8 @@ const financeiro = (t: Totais) => ({
 });
 
 /**
- * Relatórios gerenciais da matriz (estudo de caso, seção 3): vendas e financeiro por unidade e
- * por região, metas por unidade e produtos mais consumidos. GERENTE vê apenas a própria unidade;
- * ADMIN (matriz) vê a rede toda. São consultas agregadas, sem dados pessoais.
- *
- * Escala: em produção estas consultas iriam para uma réplica de leitura/visão materializada,
- * para não disputar recursos com a criação de pedidos no horário de pico.
+ * Relatórios da matriz por unidade ou região. GERENTE vê a própria unidade. ADMIN vê a rede.
+ * Em produção, as consultas agregadas iriam para uma réplica de leitura.
  */
 @Injectable()
 export class RelatoriosService {
@@ -158,9 +154,7 @@ export class RelatoriosService {
     };
   }
 
-  // ------------------------------ auxiliares ------------------------------
-
-  /** Período padrão: do 1º dia do mês corrente até agora. GERENTE é sempre restrito à própria unidade. */
+  /** Período padrão: mês corrente. GERENTE sempre restrito à unidade. */
   private normalizar(filtros: FiltrosRelatorio, ator: Ator) {
     const agora = this.relogio.agora();
     const de = filtros.de ?? new Date(Date.UTC(agora.getUTCFullYear(), agora.getUTCMonth(), 1));
@@ -225,7 +219,7 @@ export class RelatoriosService {
     return mapa;
   }
 
-  /** Meta mensal de faturamento líquido (indicador de desempenho da unidade). */
+  /** Percentual da meta mensal de faturamento líquido. */
   private indicadorDeMeta(liquidoCentavos: number, metaCentavos: number | null) {
     return {
       metaMensal: metaCentavos != null ? paraReais(metaCentavos) : null,

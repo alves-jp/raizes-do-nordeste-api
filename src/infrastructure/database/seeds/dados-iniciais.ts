@@ -13,14 +13,9 @@ import {
 } from '../../../domain/enums';
 import { Campanha, Consentimento, Estoque, ItemCardapio, MovimentacaoEstoque, Produto, TransacaoFidelidade, Unidade, Usuario } from '../entidades';
 
-/** Senha de TODOS os usuários de demonstração. */
 export const SENHA_PADRAO_SEED = 'Raizes@2026';
 
-/**
- * Unidades de demonstração. A 1ª é a loja que deu origem à rede, em um bairro tradicional de Recife
- * (estudo de caso, seção 1). Belo Horizonte opera em formato REDUZIDO (sem cozinha completa).
- * Metas mensais de faturamento líquido em centavos.
- */
+/** Unidades de demonstração (Recife é a origem e BH opera em formato REDUZIDO). */
 const UNIDADES = [
   {
     nome: 'Raízes do Nordeste — Recife (Casa Amarela)',
@@ -54,7 +49,7 @@ const UNIDADES = [
 /** Produtos cujo preparo exige cozinha completa (ids): não entram no cardápio de unidades REDUZIDA. */
 const EXIGEM_COZINHA_COMPLETA = [4, 5, 8, 11, 15];
 
-/** [nome, descrição, categoria, sazonal?, mês início, mês fim] — ids 1 a 15 na ordem abaixo. */
+/** Ordem dos campos: nome, descrição, categoria, sazonal?, mês início, mês fim. IDs de 1 a 15. */
 const PRODUTOS: [string, string, CategoriaProduto, boolean?, number?, number?][] = [
   ['Tapioca de carne de sol com queijo coalho', 'Goma de tapioca recheada com carne de sol desfiada e queijo coalho na chapa.', CategoriaProduto.TAPIOCAS],
   ['Tapioca de coco com leite condensado', 'Tapioca doce com coco ralado fresco e leite condensado.', CategoriaProduto.TAPIOCAS],
@@ -73,7 +68,7 @@ const PRODUTOS: [string, string, CategoriaProduto, boolean?, number?, number?][]
   ['Café da manhã completo', 'Cuscuz com ovo, tapioca de queijo coalho, bolo de macaxeira, suco regional e café coado.', CategoriaProduto.PRATOS],
 ];
 
-/** Preço (R$) por unidade [Recife, Fortaleza, BH]; null = fora do cardápio daquela unidade. */
+/** Preço (R$) por unidade [Recife, Fortaleza, BH]. Null significa fora do cardápio. */
 const PRECOS: (number | null)[][] = [
   [24.9, 23.9, 27.9],
   [16.9, 15.9, null],
@@ -101,7 +96,7 @@ const VARIACOES_REGIONAIS: [number, number, string][] = [
   [9, 3, 'Feito com polpa congelada (fora da região produtora do cajá)'],
 ];
 
-/** Estoque inicial [Recife, Fortaleza, BH] — Bolo de rolo baixo e Cartola zerada em Recife para demonstrar as regras. */
+/** Estoque inicial [Recife, Fortaleza, BH]. Bolo de rolo baixo e Cartola zerada em Recife para demonstrar as regras. */
 const ESTOQUE: number[][] = [
   [60, 40, 25],
   [40, 30, 0],
@@ -131,10 +126,7 @@ const USUARIOS = [
   { nome: 'Bruno Costa', email: 'bruno.costa@email.com', perfil: Perfil.CLIENTE, unidade: null },
 ];
 
-/**
- * Popula o banco com dados de demonstração. Idempotente: não faz nada se já houver unidades.
- * @returns true se semeou, false se o banco já tinha dados.
- */
+/** Popula dados de demonstração de forma idempotente. */
 export async function semearDadosIniciais(dataSource: DataSource): Promise<boolean> {
   if ((await dataSource.getRepository(Unidade).count()) > 0) return false;
   const senhaHash = bcrypt.hashSync(SENHA_PADRAO_SEED, 10);
@@ -180,7 +172,6 @@ export async function semearDadosIniciais(dataSource: DataSource): Promise<boole
           email: u.email,
           senhaHash,
           telefone: u.telefone ?? null,
-          // Ana consentiu com MARKETING e informou a data de nascimento (campanhas por faixa etária).
           dataNascimento: u.dataNascimento ?? null,
           perfil: u.perfil,
           unidadeId: u.unidade,

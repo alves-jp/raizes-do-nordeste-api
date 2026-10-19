@@ -1,11 +1,7 @@
 import { Column, CreateDateColumn, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
 import { AcaoAuditoria, Perfil } from '../../../domain/enums';
 
-/**
- * Trilha de auditoria de ações sensíveis (append-only).
- * Sem FK de propósito: o registro deve sobreviver mesmo se a entidade referenciada mudar.
- * Detalhes nunca contêm senha, token ou dado pessoal em claro (e-mails são mascarados).
- */
+/** Trilha append-only, sem FK e sem dados sensíveis em claro. */
 @Entity('logs_auditoria')
 @Index(['acao', 'criadoEm'])
 @Index(['entidade', 'entidadeId'])

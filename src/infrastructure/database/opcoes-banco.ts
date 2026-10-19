@@ -6,12 +6,10 @@ import { ENTIDADES } from './entidades';
 import { EstrategiaDeNomesSnakeCase } from './estrategia-de-nomes';
 
 /**
- * SQLite executado via sql.js (WebAssembly): nenhuma dependência nativa, roda igual em
- * Windows, macOS e Linux só com `npm install`. O banco é persistido no arquivo
- * DATABASE_PATH após cada escrita (autoSave). Para produção, basta trocar `type` para
- * 'postgres' e gerar as migrations para esse SGBD — entidades e serviços não mudam.
+ * SQLite via sql.js (WebAssembly): sem dependência nativa, roda igual em Windows,
+ * macOS e Linux. Em produção, troque `type` para 'postgres' e gere as migrations.
  *
- * @param caminho caminho do arquivo; `null` usa banco somente em memória (testes).
+ * @param caminho caminho do arquivo. Use null para banco em memória nos testes.
  */
 export function opcoesDoBanco(caminho: string | null = ambiente.bancoCaminho): DataSourceOptions {
   if (caminho) mkdirSync(dirname(caminho), { recursive: true });

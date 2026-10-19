@@ -31,7 +31,6 @@ export function visaoDoPedido(p: Pedido) {
   };
 }
 
-/** Versão resumida para listagens. */
 export function resumoDoPedido(p: Pedido) {
   return {
     id: p.id,

@@ -1,7 +1,7 @@
 import { Check, Column, CreateDateColumn, Entity, Index, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { CategoriaProduto } from '../../../domain/enums';
 
-/** Produto do catálogo central da rede (definido pela matriz). Preço é por unidade (ItemCardapio). */
+/** Produto do catálogo central. O preço é por unidade. */
 @Entity('produtos')
 @Check('CHK_produto_sazonalidade', `sazonal = 0 OR mes_inicio BETWEEN 1 AND 12 AND mes_fim BETWEEN 1 AND 12`)
 export class Produto {

@@ -1,10 +1,5 @@
-/**
- * Enumerações do domínio da Rede Raízes do Nordeste.
- * São a fonte única de verdade: usadas nas entidades (CHECK no banco),
- * nos DTOs (validação da API) e nas regras de negócio.
- */
+/** Enumerações compartilhadas por entidades, DTOs e regras de negócio. */
 
-/** Perfis de acesso (RBAC). */
 export enum Perfil {
   CLIENTE = 'CLIENTE',
   ATENDENTE = 'ATENDENTE',
@@ -18,7 +13,6 @@ export enum Perfil {
 /** Perfis de funcionários/dispositivos, que sempre pertencem a uma unidade (exceto ADMIN). */
 export const PERFIS_DE_UNIDADE: Perfil[] = [Perfil.ATENDENTE, Perfil.COZINHA, Perfil.GERENTE, Perfil.TOTEM];
 
-/** Canal de origem do pedido (requisito de multicanalidade). */
 export enum CanalPedido {
   APP = 'APP',
   TOTEM = 'TOTEM',
@@ -27,7 +21,6 @@ export enum CanalPedido {
   WEB = 'WEB',
 }
 
-/** Ciclo de vida do pedido. */
 export enum StatusPedido {
   AGUARDANDO_PAGAMENTO = 'AGUARDANDO_PAGAMENTO',
   PAGAMENTO_RECUSADO = 'PAGAMENTO_RECUSADO',
@@ -58,11 +51,7 @@ export enum TipoUnidade {
   FRANQUIA = 'FRANQUIA',
 }
 
-/**
- * Formato operacional da loja (estudo de caso: "algumas possuem cozinha completa,
- * outras operam em formato reduzido"). Produtos que exigem cozinha completa não
- * podem entrar no cardápio de uma unidade REDUZIDA.
- */
+/** Formato da loja. Unidades REDUZIDAS não vendem itens que exigem cozinha completa. */
 export enum FormatoUnidade {
   COMPLETA = 'COMPLETA',
   REDUZIDA = 'REDUZIDA',
@@ -77,11 +66,7 @@ export enum Regiao {
   SUL = 'SUL',
 }
 
-/**
- * Níveis do programa de fidelidade, definidos pela frequência de consumo
- * (pedidos pagos nos últimos 90 dias). Quanto maior o nível, maior o desconto
- * obtido com os mesmos pontos (desconto progressivo).
- */
+/** Níveis por frequência de consumo (90 dias), com desconto progressivo no resgate. */
 export enum NivelFidelidade {
   BRONZE = 'BRONZE',
   PRATA = 'PRATA',
@@ -98,7 +83,6 @@ export enum CategoriaProduto {
 }
 
 export enum TipoMovimentacaoEstoque {
-  /** Recebimento de mercadoria. */
   ENTRADA = 'ENTRADA',
   /** Perda, descarte ou consumo interno (exige motivo). */
   SAIDA = 'SAIDA',

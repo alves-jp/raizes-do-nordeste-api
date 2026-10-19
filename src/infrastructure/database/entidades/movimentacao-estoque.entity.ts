@@ -5,7 +5,7 @@ import { Produto } from './produto.entity';
 import { Unidade } from './unidade.entity';
 import { Usuario } from './usuario.entity';
 
-/** Histórico imutável de entradas e saídas de estoque (rastreabilidade). */
+/** Histórico imutável de entradas e saídas de estoque. */
 @Entity('movimentacoes_estoque')
 @Index(['unidadeId', 'criadoEm'])
 @Check('CHK_movimentacao_quantidade_positiva', 'quantidade > 0')
@@ -30,7 +30,7 @@ export class MovimentacaoEstoque {
   @Column({ type: 'simple-enum', enum: TipoMovimentacaoEstoque })
   tipo: TipoMovimentacaoEstoque;
 
-  /** Sempre positiva; o sentido (entrada/saída) vem do tipo. */
+  /** Sempre positiva. O sentido (entrada ou saída) vem do tipo. */
   @Column({ type: 'integer' })
   quantidade: number;
 

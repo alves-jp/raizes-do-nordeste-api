@@ -12,7 +12,7 @@ import { Relogio } from '../comum/relogio';
 /** Status que representam um pedido efetivamente pago (contam para frequência e faturamento). */
 export const STATUS_PAGOS = [StatusPedido.PAGO, StatusPedido.EM_PREPARO, StatusPedido.PRONTO, StatusPedido.ENTREGUE];
 
-/** Programa de fidelidade "Cliente Raiz". Regras puras em domain/fidelidade. */
+/** Programa de fidelidade "Cliente Raiz". */
 @Injectable()
 export class FidelidadeService {
   constructor(
@@ -20,7 +20,7 @@ export class FidelidadeService {
     private readonly relogio: Relogio,
   ) {}
 
-  /** Nível do cliente pela frequência de consumo: pedidos pagos nos últimos 90 dias. */
+  /** Nível pela frequência: pedidos pagos nos últimos 90 dias. */
   async nivel(clienteId: number, em: EntityManager = this.transacoes.manager) {
     const desde = new Date(this.relogio.agora().getTime() - REGRAS_FIDELIDADE.janelaDeFrequenciaEmDias * 86_400_000);
     const pedidosPagos = await em.count(Pedido, { where: { clienteId, status: In(STATUS_PAGOS), criadoEm: MoreThanOrEqual(desde) } });
@@ -86,8 +86,6 @@ export class FidelidadeService {
     );
   }
 
-  // ---- Operações chamadas por outros casos de uso, sempre dentro da transação deles ----
-
   async debitarResgate(em: EntityManager, pedido: Pedido): Promise<void> {
     if (!pedido.clienteId || pedido.pontosResgatados <= 0) return;
     await em.insert(TransacaoFidelidade, {
@@ -99,7 +97,7 @@ export class FidelidadeService {
     });
   }
 
-  /** Credita pontos de um pedido pago, se o cliente consentiu com o programa. Retorna os pontos creditados. */
+  /** Credita pontos se houver consentimento FIDELIDADE e retorna o total. */
   async creditarPorPagamento(em: EntityManager, pedido: Pedido): Promise<number> {
     if (!pedido.clienteId) return 0;
     if (!(await this.temConsentimento(pedido.clienteId, FinalidadeConsentimento.FIDELIDADE, em))) return 0;
@@ -115,7 +113,6 @@ export class FidelidadeService {
     return pontos;
   }
 
-  /** Desfaz os efeitos de fidelidade de um pedido cancelado. */
   async estornarPedido(em: EntityManager, pedido: Pedido): Promise<{ devolvidos: number; estornados: number }> {
     if (!pedido.clienteId) return { devolvidos: 0, estornados: 0 };
     let devolvidos = 0;

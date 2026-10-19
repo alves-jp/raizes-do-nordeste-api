@@ -1,11 +1,7 @@
 import { CanalPedido, Perfil } from '../enums';
 import { ErroDeDominio, NaturezaErro } from '../erros';
 
-/**
- * Multicanalidade: cada perfil só pode originar pedidos pelos canais que opera.
- * Isso garante que o canalPedido registrado reflita a origem real do pedido
- * (rastreabilidade por canal) e não um valor escolhido livremente pelo cliente.
- */
+/** Cada perfil só origina pedidos pelos canais que opera (rastreabilidade por canal). */
 export const CANAIS_POR_PERFIL: Record<Perfil, CanalPedido[]> = {
   [Perfil.CLIENTE]: [CanalPedido.APP, CanalPedido.WEB, CanalPedido.PICKUP],
   [Perfil.TOTEM]: [CanalPedido.TOTEM],

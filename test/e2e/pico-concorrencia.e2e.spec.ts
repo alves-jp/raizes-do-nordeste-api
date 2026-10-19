@@ -62,7 +62,7 @@ describe('Horário de pico — concorrência', () => {
     expect(respostas.filter((r) => r.status === 201)).toHaveLength(1);
     const conflitos = respostas.filter((r) => r.status === 409);
     expect(conflitos).toHaveLength(3);
-    // Quem chega durante a cobrança recebe PAGAMENTO_EM_PROCESSAMENTO; quem chega depois, PEDIDO_JA_PAGO.
+    // Quem chega durante a cobrança recebe PAGAMENTO_EM_PROCESSAMENTO. Quem chega depois recebe PEDIDO_JA_PAGO.
     expect(conflitos.every((r) => ['PAGAMENTO_EM_PROCESSAMENTO', 'PEDIDO_JA_PAGO'].includes(r.body.error))).toBe(true);
     const aprovados = await ctx.dataSource.query(`SELECT COUNT(*) AS n FROM pagamentos WHERE pedido_id = ? AND status = 'APROVADO'`, [pedido.body.id]);
     expect(Number(aprovados[0].n)).toBe(1);

@@ -1,18 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-/**
- * Evolução do esquema para aderir ao estudo de caso oficial (revisão 0.3):
- *
- * - unidades.formato (COMPLETA | REDUZIDA) e unidades.meta_mensal_centavos (metas e indicadores por unidade);
- * - produtos.exige_cozinha_completa (unidades em formato reduzido não vendem esses itens);
- * - itens_cardapio.variacao_regional (receitas que variam levemente conforme a região);
- * - usuarios.data_nascimento (opcional, só com consentimento MARKETING — segmentação por faixa etária);
- * - campanhas.nivel_minimo_fidelidade, idade_minima e idade_maxima (campanhas segmentadas);
- * - novos valores de logs_auditoria.acao (DADOS_PESSOAIS_ATUALIZADOS, RELATORIO_CONSULTADO).
- *
- * O SQLite não altera CHECK/colunas com restrição por ALTER TABLE; por isso cada tabela é recriada
- * (temporary_* → cópia dos dados → rename), padrão gerado pelo TypeORM. Os dados existentes são preservados.
- */
+/** Evolução do esquema do estudo de caso. SQLite recria tabelas para alterar CHECKs. */
 export class EvolucaoEstudoDeCaso1792300000000 implements MigrationInterface {
     name = 'EvolucaoEstudoDeCaso1792300000000';
 

@@ -29,7 +29,7 @@ export interface FiltrosAuditoria {
 export class AuditoriaService {
   constructor(@InjectRepository(LogAuditoria) private readonly logs: Repository<LogAuditoria>) {}
 
-  /** Grava o registro DENTRO da transação do caso de uso: ou tudo é salvo, ou nada é. */
+  /** Grava na mesma transação do caso de uso. */
   async registrar(em: EntityManager, r: RegistroDeAuditoria): Promise<void> {
     const contexto = contextoAtual();
     await em.insert(LogAuditoria, {
@@ -45,7 +45,7 @@ export class AuditoriaService {
     });
   }
 
-  /** ADMIN vê toda a rede; GERENTE vê apenas os registros da própria unidade. */
+  /** ADMIN vê a rede. GERENTE vê só a própria unidade. */
   async listar(filtros: FiltrosAuditoria, paginacao: Paginacao, ator: Ator): Promise<Pagina<Record<string, unknown>>> {
     const where: FindOptionsWhere<LogAuditoria> = {};
     if (filtros.acao) where.acao = filtros.acao;

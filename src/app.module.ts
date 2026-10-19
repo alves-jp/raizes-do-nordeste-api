@@ -33,17 +33,11 @@ import { HasherDeSenha } from './infrastructure/seguranca/hasher-senha';
 import { LimitadorDeLogin } from './infrastructure/seguranca/limitador-de-login';
 
 export interface OpcoesDaAplicacao {
-  /** Caminho do arquivo SQLite; `null` = banco em memória (testes). */
+  /** Caminho do arquivo SQLite. Null usa banco em memória nos testes. */
   bancoCaminho?: string | null;
 }
 
-/**
- * Composição da aplicação (injeção de dependências):
- *   API (controllers, guard, filtros)  →  Application (casos de uso)  →  Domain (regras puras)
- *                                         ↘ Infrastructure (TypeORM, gateway mock, hash, config)
- * A porta GatewayDePagamento é ligada aqui ao adaptador mock — trocar por um PSP real
- * é mudar uma linha.
- */
+/** Composição da aplicação: API → Application → Domain, com Infrastructure plugada. */
 @Module({})
 export class AppModule implements NestModule {
   static configurar(opcoes: OpcoesDaAplicacao = {}): DynamicModule {
@@ -70,7 +64,6 @@ export class AppModule implements NestModule {
         SaudeController,
       ],
       providers: [
-        // Application
         AuthService,
         UsuariosService,
         CatalogoService,
@@ -81,13 +74,12 @@ export class AppModule implements NestModule {
         CampanhasService,
         AuditoriaService,
         RelatoriosService,
-        // Infrastructure
         UnidadeDeTrabalho,
         HasherDeSenha,
         LimitadorDeLogin,
         { provide: GatewayDePagamento, useClass: GatewayDePagamentoMock },
         { provide: Relogio, useClass: RelogioDoSistema },
-        // API — autenticação/autorização em TODAS as rotas (exceto @Publico)
+        // Autenticação em todas as rotas (exceto @Publico)
         { provide: APP_GUARD, useClass: AutenticacaoGuard },
       ],
     };

@@ -2,12 +2,7 @@ import { Column, CreateDateColumn, Entity, Index, JoinColumn, ManyToOne, Primary
 import { Perfil } from '../../../domain/enums';
 import { Unidade } from './unidade.entity';
 
-/**
- * Usuário do sistema (clientes, funcionários e contas de totem).
- * LGPD — minimização: coletamos apenas nome, e-mail e, opcionalmente, telefone e data de nascimento.
- * A data de nascimento só é aceita com consentimento MARKETING (segmentação por faixa etária) e é
- * apagada quando esse consentimento é revogado. CPF e endereço não são coletados.
- */
+/** Usuário do sistema, com coleta mínima de dados (LGPD). */
 @Entity('usuarios')
 export class Usuario {
   @PrimaryGeneratedColumn()
@@ -27,14 +22,14 @@ export class Usuario {
   @Column({ type: 'varchar', length: 20, nullable: true })
   telefone: string | null;
 
-  /** Opcional (AAAA-MM-DD); usada apenas para calcular a faixa etária em campanhas segmentadas. */
+  /** Opcional (AAAA-MM-DD). Usada apenas para calcular a faixa etária em campanhas segmentadas. */
   @Column({ type: 'varchar', length: 10, nullable: true })
   dataNascimento: string | null;
 
   @Column({ type: 'simple-enum', enum: Perfil })
   perfil: Perfil;
 
-  /** Obrigatório para ATENDENTE, COZINHA, GERENTE e TOTEM; nulo para CLIENTE e ADMIN. */
+  /** Obrigatório para ATENDENTE, COZINHA, GERENTE e TOTEM. Nulo para CLIENTE e ADMIN. */
   @Column({ type: 'integer', nullable: true })
   unidadeId: number | null;
 

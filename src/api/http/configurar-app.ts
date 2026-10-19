@@ -4,11 +4,11 @@ import { ambiente } from '../../infrastructure/config/ambiente';
 import { FiltroDeErros } from './filtro-de-erros';
 import { pipeDeValidacao } from './validacao';
 
-/** Configuração HTTP comum à aplicação real e aos testes e2e. */
+/** Configuração HTTP comum à aplicação e aos testes e2e. */
 export function configurarApp(app: INestApplication): void {
   app.use(
     helmet({
-      // O Swagger UI usa scripts/estilos inline; CSP fica relaxada apenas para /docs.
+      // O Swagger UI usa scripts/estilos inline.
       contentSecurityPolicy: false,
     }),
   );

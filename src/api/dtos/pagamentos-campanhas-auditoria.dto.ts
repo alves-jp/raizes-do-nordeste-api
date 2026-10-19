@@ -5,8 +5,6 @@ import { AcaoAuditoria, CanalPedido, FormaPagamento, NivelFidelidade } from '../
 import { TOKENS_DE_TESTE } from '../../infrastructure/pagamento/gateway-pagamento-mock';
 import { listaDeValores, PaginacaoQuery } from './comum.dto';
 
-// ------------------------------- Pagamentos -------------------------------
-
 export class SolicitarPagamentoDto {
   @ApiProperty({ example: 1 })
   @IsInt({ message: 'pedidoId deve ser inteiro' })
@@ -30,8 +28,6 @@ export class SolicitarPagamentoDto {
   @Matches(/^tok_[a-z_]{3,40}$/, { message: 'tokenPagamento em formato inválido (esperado tok_...)' })
   tokenPagamento?: string;
 }
-
-// ------------------------------- Campanhas --------------------------------
 
 export class CriarCampanhaDto {
   @ApiProperty({ example: 'SAOJOAO15', description: 'Código que o cliente digita (letras e números, será convertido para maiúsculas)' })
@@ -108,8 +104,6 @@ export class ListarCampanhasQuery extends PaginacaoQuery {
   @IsEnum(CanalPedido, { message: `canalPedido deve ser um de: ${listaDeValores(CanalPedido)}` })
   canalPedido?: CanalPedido;
 }
-
-// ------------------------------- Auditoria --------------------------------
 
 export class ListarAuditoriaQuery extends PaginacaoQuery {
   @ApiPropertyOptional({ enum: AcaoAuditoria })

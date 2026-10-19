@@ -1,7 +1,7 @@
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import { FormatoUnidade, TipoUnidade } from '../../../domain/enums';
 
-/** Unidade (loja) da rede. A matriz é representada pelo perfil ADMIN, não por uma loja. */
+/** Unidade da rede. A matriz é representada pelo perfil ADMIN. */
 @Entity('unidades')
 export class Unidade {
   @PrimaryGeneratedColumn()

@@ -64,11 +64,7 @@ export class PedidosService {
     private readonly relogio: Relogio,
   ) {}
 
-  /**
-   * Fluxo crítico — criação do pedido:
-   * valida canal × perfil, unidade, cliente, cardápio, temporada; calcula subtotal,
-   * campanha e resgate de pontos; baixa o estoque; tudo numa única transação.
-   */
+  /** Cria o pedido em uma transação: valida, precifica, aplica descontos e baixa o estoque. */
   async criar(dados: NovoPedido, ator: Ator, chaveIdempotencia?: string): Promise<{ pedido: ReturnType<typeof visaoDoPedido>; repetido: boolean }> {
     return this.uow.executar(async (em) => {
       if (chaveIdempotencia) {
@@ -172,7 +168,7 @@ export class PedidosService {
           campanha: campanha?.codigo ?? null,
           campanhaSegmentada: campanha ? campanhaEhSegmentada(campanha) : false,
           pontosResgatados: pontosResgate,
-          // Apenas o nível (dado derivado); idade e data de nascimento nunca vão para a auditoria.
+          // Apenas o nível, que é um dado derivado. Idade e data de nascimento nunca vão para a auditoria.
           nivelFidelidade: (perfilDoCliente as PerfilDoCliente | null)?.nivel ?? null,
         },
       });
@@ -200,7 +196,7 @@ export class PedidosService {
     return paginar(itens.map(resumoDoPedido), total, paginacao);
   }
 
-  /** Consolidação por canal (multicanalidade): volume e faturamento de cada canal. */
+  /** Volume e faturamento por canal. */
   async resumoPorCanal(filtros: { unidadeId?: number; dataInicio?: Date; dataFim?: Date }, ator: Ator) {
     const unidadeId = ator.perfil === Perfil.ADMIN ? filtros.unidadeId : ator.unidadeId!;
     if (filtros.unidadeId && ator.perfil !== Perfil.ADMIN) garantirAcessoAUnidade(ator, filtros.unidadeId);
@@ -240,7 +236,7 @@ export class PedidosService {
     return visaoDoPedido(pedido);
   }
 
-  /** Atualização operacional (cozinha → pronto → entregue), validada pela máquina de estados. */
+  /** Atualiza o status operacional validado pela máquina de estados. */
   async atualizarStatus(id: number, novoStatus: StatusPedido, ator: Ator) {
     return this.uow.executar(async (em) => {
       const pedido = await this.carregar(em, id);
@@ -260,10 +256,7 @@ export class PedidosService {
     });
   }
 
-  /**
-   * Cancelamento com compensação: estorna o pagamento aprovado no provedor (se houver),
-   * devolve o estoque e desfaz os efeitos de fidelidade.
-   */
+  /** Cancela com estorno, devolução de estoque e reversão de pontos. */
   async cancelar(id: number, motivo: string, ator: Ator) {
     const pedido = await this.carregar(this.pedidos.manager, id);
     this.verificarEscopo(pedido, ator);
@@ -324,8 +317,6 @@ export class PedidosService {
     });
   }
 
-  // ------------------------------ auxiliares ------------------------------
-
   async carregar(em: EntityManager, id: number): Promise<Pedido> {
     const pedido = await em.findOne(Pedido, { where: { id }, relations: { itens: true, campanha: true } });
     if (!pedido) throw naoEncontrado('Pedido', id);
@@ -333,10 +324,7 @@ export class PedidosService {
     return pedido;
   }
 
-  /**
-   * CLIENTE só enxerga os próprios pedidos (pedido de outro cliente responde 404,
-   * para não revelar que o ID existe). Equipe/totem só enxergam a própria unidade (403).
-   */
+  /** CLIENTE vê os próprios pedidos (404 para evitar enumeração). Equipe vê só a própria unidade (403). */
   verificarEscopo(pedido: Pedido, ator: Ator): void {
     if (ator.perfil === Perfil.CLIENTE) {
       if (pedido.clienteId !== ator.id) throw naoEncontrado('Pedido', pedido.id);
@@ -356,7 +344,7 @@ export class PedidosService {
     return cliente.id;
   }
 
-  /** Nível (frequência), idade (derivada da data de nascimento opcional) e consentimento MARKETING do cliente. */
+  /** Nível, idade e consentimento MARKETING para campanhas segmentadas. */
   private async perfilDoCliente(em: EntityManager, clienteId: number, agora: Date) {
     const [nivel, usuario, consentiuMarketing] = await Promise.all([
       this.fidelidade.nivel(clienteId, em),

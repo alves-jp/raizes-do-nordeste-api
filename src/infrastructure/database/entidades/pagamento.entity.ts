@@ -2,10 +2,7 @@ import { Column, CreateDateColumn, Entity, Index, JoinColumn, ManyToOne, Primary
 import { FormaPagamento, StatusPagamento } from '../../../domain/enums';
 import { Pedido } from './pedido.entity';
 
-/**
- * Tentativa de pagamento junto ao gateway externo. Desacoplada do pedido:
- * um pedido pode ter várias tentativas (ex.: recusado e depois aprovado).
- */
+/** Tentativa de pagamento. Um pedido pode ter várias. */
 @Entity('pagamentos')
 @Index(['pedidoId', 'criadoEm'])
 export class Pagamento {

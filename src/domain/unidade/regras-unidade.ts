@@ -9,7 +9,7 @@ const REGIOES_POR_UF: Record<Regiao, string[]> = {
   [Regiao.SUL]: ['PR', 'RS', 'SC'],
 };
 
-/** Região do IBGE de uma UF — usada nos relatórios de vendas por região da matriz. */
+/** Região IBGE da UF. */
 export function regiaoDaUf(uf: string): Regiao {
   const sigla = uf.trim().toUpperCase();
   const regiao = (Object.keys(REGIOES_POR_UF) as Regiao[]).find((r) => REGIOES_POR_UF[r].includes(sigla));
@@ -17,10 +17,7 @@ export function regiaoDaUf(uf: string): Regiao {
   return regiao;
 }
 
-/**
- * Padronização da franquia × diferenças entre lojas: uma unidade em formato REDUZIDO
- * não tem cozinha completa e, por isso, não pode vender produtos que dependem dela.
- */
+/** Unidade REDUZIDA não vende produtos que exigem cozinha completa. */
 export function validarProdutoNoFormato(
   produto: { nome: string; exigeCozinhaCompleta: boolean },
   unidade: { nome: string; formato: FormatoUnidade },

@@ -36,7 +36,7 @@ export class CampanhasService {
     private readonly relogio: Relogio,
   ) {}
 
-  /** Campanhas vigentes agora (vitrine pública para App/Totem/Web). */
+  /** Campanhas vigentes para a vitrine pública. */
   async listarVigentes(filtros: { unidadeId?: number; canalPedido?: CanalPedido }, paginacao: Paginacao): Promise<Pagina<ReturnType<CampanhasService['visao']>>> {
     const agora = this.relogio.agora();
     const qb = this.campanhas
@@ -89,7 +89,6 @@ export class CampanhasService {
           valorMinimoCentavos: paraCentavos(dados.valorMinimo ?? 0),
           nivelMinimoFidelidade: dados.nivelMinimoFidelidade ?? null,
           idadeMinima: idadeMinima ?? null,
-          // Faixa aberta para cima, mas sempre com piso de 18 anos quando há segmentação por idade.
           idadeMaxima: idadeMaxima ?? null,
         }),
       );

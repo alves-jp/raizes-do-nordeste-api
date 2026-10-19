@@ -11,18 +11,9 @@ import {
 import { ambiente } from '../config/ambiente';
 
 /**
- * Provedor de pagamento SIMULADO ("RaizesPay Sandbox").
- * Nenhum pagamento real é feito. O resultado é determinado pelo token de teste,
- * no mesmo estilo dos ambientes sandbox dos PSPs de mercado:
- *
- * | tokenPagamento            | Resultado                                                 |
- * |---------------------------|-----------------------------------------------------------|
- * | tok_aprovado (padrão)     | APROVADO                                                  |
- * | tok_recusado_saldo        | RECUSADO — SALDO_INSUFICIENTE                             |
- * | tok_recusado_antifraude   | RECUSADO — SUSPEITA_DE_FRAUDE                             |
- * | tok_gateway_instavel      | 1ª chamada falha (503), a nova tentativa automática aprova |
- * | tok_gateway_indisponivel  | não responde dentro do timeout (falha de comunicação)     |
- * | qualquer outro            | RECUSADO — TOKEN_INVALIDO                                 |
+ * Provedor simulado. O token define o resultado: tok_aprovado, tok_recusado_saldo,
+ * tok_recusado_antifraude, tok_gateway_instavel (falha 1x e depois aprova) e
+ * tok_gateway_indisponivel (timeout). Qualquer outro token é recusado.
  */
 export const TOKENS_DE_TESTE = {
   aprovado: 'tok_aprovado',
@@ -67,7 +58,7 @@ export class GatewayDePagamentoMock extends GatewayDePagamento {
       created_at: new Date().toISOString(),
     };
     if (s.forma === FormaPagamento.PIX && !recusa) {
-      // No sandbox o PIX é confirmado na hora; num PSP real chegaria depois via webhook.
+      // No sandbox o PIX é confirmado na hora. Num PSP real chegaria depois via webhook.
       payload.pix = { end_to_end_id: `E${Date.now()}RAIZES`, paid_at: new Date().toISOString() };
     }
     return {

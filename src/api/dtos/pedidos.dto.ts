@@ -156,5 +156,5 @@ export class ResumoPorCanalQuery {
   dataFim?: Date;
 }
 
-/** Cabeçalho de idempotência aceito em POST /pedidos e POST /pagamentos. */
+/** Formato aceito no header Idempotency-Key. */
 export const REGEX_IDEMPOTENCIA = /^[\w-]{8,80}$/;

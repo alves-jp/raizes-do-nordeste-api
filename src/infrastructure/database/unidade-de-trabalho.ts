@@ -2,13 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { DataSource, EntityManager } from 'typeorm';
 
 /**
- * Unidade de Trabalho: executa um bloco de escrita dentro de UMA transação.
- *
- * O SQLite (sql.js) usa uma única conexão, então as transações são enfileiradas e
- * executadas uma de cada vez. Isso dá isolamento serializável às regras críticas
- * (ex.: dois pedidos simultâneos disputando o último item do estoque nunca deixam o
- * saldo negativo) — além do CHECK (quantidade >= 0) no banco como última barreira.
- * Em PostgreSQL, o mesmo contrato seria atendido com SELECT ... FOR UPDATE.
+ * Executa um bloco de escrita em uma transação. O sql.js usa uma única conexão,
+ * então as transações são enfileiradas (isolamento serializável).
+ * Em PostgreSQL, o equivalente seria SELECT ... FOR UPDATE.
  */
 @Injectable()
 export class UnidadeDeTrabalho {

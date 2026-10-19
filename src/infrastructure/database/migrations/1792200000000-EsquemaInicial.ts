@@ -1,13 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-/**
- * Esquema inicial da Rede Raízes do Nordeste.
- *
- * - Chaves estrangeiras com ON DELETE explícito (RESTRICT protege histórico de pedidos).
- * - Domínios fechados (perfil, canal, status...) garantidos por CHECK no banco, além da validação na API.
- * - Regras de integridade no banco: estoque nunca negativo, preço > 0, total = subtotal - descontos,
- *   unicidade de e-mail, de cardápio/estoque por unidade+produto e das chaves de idempotência.
- */
+/** Esquema inicial, com FKs, CHECKs e índices de integridade. */
 export class EsquemaInicial1792200000000 implements MigrationInterface {
   name = 'EsquemaInicial1792200000000';
 

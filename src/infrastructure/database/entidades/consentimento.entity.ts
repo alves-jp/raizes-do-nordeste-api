@@ -2,11 +2,7 @@ import { Column, CreateDateColumn, Entity, Index, JoinColumn, ManyToOne, Primary
 import { FinalidadeConsentimento } from '../../../domain/enums';
 import { Usuario } from './usuario.entity';
 
-/**
- * Registro de consentimento (LGPD, art. 8º — prova do consentimento).
- * Tabela append-only: cada concessão ou revogação gera uma nova linha. O consentimento
- * vigente para uma finalidade é o registro mais recente daquele usuário + finalidade.
- */
+/** Consentimento append-only (LGPD, art. 8º). O vigente é o registro mais recente. */
 @Entity('consentimentos')
 @Index(['usuarioId', 'finalidade', 'registradoEm'])
 export class Consentimento {

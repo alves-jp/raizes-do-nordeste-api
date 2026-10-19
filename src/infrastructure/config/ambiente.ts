@@ -1,9 +1,6 @@
 import 'dotenv/config';
 
-/**
- * Configuração lida das variáveis de ambiente (.env), com padrões seguros para
- * desenvolvimento. Centralizada aqui para que nenhuma outra camada leia process.env.
- */
+/** Configuração centralizada. Nenhuma outra camada lê process.env. */
 const inteiro = (nome: string, padrao: number): number => {
   const valor = process.env[nome];
   if (valor === undefined || valor === '') return padrao;

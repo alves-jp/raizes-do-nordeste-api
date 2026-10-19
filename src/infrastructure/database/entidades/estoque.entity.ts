@@ -2,7 +2,7 @@ import { Check, Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, U
 import { Produto } from './produto.entity';
 import { Unidade } from './unidade.entity';
 
-/** Saldo de estoque de um produto em uma unidade (cada unidade tem estoque próprio). */
+/** Saldo de estoque por produto e unidade. */
 @Entity('estoques')
 @Unique('UQ_estoque_unidade_produto', ['unidadeId', 'produtoId'])
 @Check('CHK_estoque_nao_negativo', 'quantidade >= 0')
