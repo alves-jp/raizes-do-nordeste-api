@@ -1,0 +1,97 @@
+import { MigrationInterface, QueryRunner } from 'typeorm';
+
+/**
+ * Evolução do esquema para aderir ao estudo de caso oficial (revisão 0.3):
+ *
+ * - unidades.formato (COMPLETA | REDUZIDA) e unidades.meta_mensal_centavos (metas e indicadores por unidade);
+ * - produtos.exige_cozinha_completa (unidades em formato reduzido não vendem esses itens);
+ * - itens_cardapio.variacao_regional (receitas que variam levemente conforme a região);
+ * - usuarios.data_nascimento (opcional, só com consentimento MARKETING — segmentação por faixa etária);
+ * - campanhas.nivel_minimo_fidelidade, idade_minima e idade_maxima (campanhas segmentadas);
+ * - novos valores de logs_auditoria.acao (DADOS_PESSOAIS_ATUALIZADOS, RELATORIO_CONSULTADO).
+ *
+ * O SQLite não altera CHECK/colunas com restrição por ALTER TABLE; por isso cada tabela é recriada
+ * (temporary_* → cópia dos dados → rename), padrão gerado pelo TypeORM. Os dados existentes são preservados.
+ */
+export class EvolucaoEstudoDeCaso1792300000000 implements MigrationInterface {
+    name = 'EvolucaoEstudoDeCaso1792300000000';
+
+    public async up(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.query(`CREATE TABLE "temporary_unidades" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "nome" varchar(120) NOT NULL, "cidade" varchar(80) NOT NULL, "uf" varchar(2) NOT NULL, "tipo" varchar CHECK( "tipo" IN ('PROPRIA','FRANQUIA') ) NOT NULL, "horario_funcionamento" varchar(20), "ativa" boolean NOT NULL DEFAULT (1), "criado_em" datetime NOT NULL DEFAULT (datetime('now')), "formato" varchar CHECK( "formato" IN ('COMPLETA','REDUZIDA') ) NOT NULL DEFAULT ('COMPLETA'), "meta_mensal_centavos" integer)`);
+        await queryRunner.query(`INSERT INTO "temporary_unidades"("id", "nome", "cidade", "uf", "tipo", "horario_funcionamento", "ativa", "criado_em") SELECT "id", "nome", "cidade", "uf", "tipo", "horario_funcionamento", "ativa", "criado_em" FROM "unidades"`);
+        await queryRunner.query(`DROP TABLE "unidades"`);
+        await queryRunner.query(`ALTER TABLE "temporary_unidades" RENAME TO "unidades"`);
+        await queryRunner.query(`DROP INDEX "IDX_d4a462e2383b0dde13e88d2860"`);
+        await queryRunner.query(`CREATE TABLE "temporary_campanhas" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "codigo" varchar(30) NOT NULL, "descricao" varchar(200) NOT NULL, "percentual_desconto" integer NOT NULL, "inicio" datetime NOT NULL, "fim" datetime NOT NULL, "unidade_id" integer, "canal_pedido" varchar CHECK( "canal_pedido" IN ('APP','TOTEM','BALCAO','PICKUP','WEB') ), "valor_minimo_centavos" integer NOT NULL DEFAULT (0), "ativa" boolean NOT NULL DEFAULT (1), "criado_em" datetime NOT NULL DEFAULT (datetime('now')), "nivel_minimo_fidelidade" varchar CHECK( "nivel_minimo_fidelidade" IN ('BRONZE','PRATA','OURO') ), "idade_minima" integer, "idade_maxima" integer, CONSTRAINT "CHK_campanha_periodo" CHECK ((fim > inicio)), CONSTRAINT "CHK_campanha_percentual" CHECK ((percentual_desconto BETWEEN 1 AND 50)), CONSTRAINT "FK_50de8f6866677d9097862db8b80" FOREIGN KEY ("unidade_id") REFERENCES "unidades" ("id") ON DELETE CASCADE ON UPDATE NO ACTION)`);
+        await queryRunner.query(`INSERT INTO "temporary_campanhas"("id", "codigo", "descricao", "percentual_desconto", "inicio", "fim", "unidade_id", "canal_pedido", "valor_minimo_centavos", "ativa", "criado_em") SELECT "id", "codigo", "descricao", "percentual_desconto", "inicio", "fim", "unidade_id", "canal_pedido", "valor_minimo_centavos", "ativa", "criado_em" FROM "campanhas"`);
+        await queryRunner.query(`DROP TABLE "campanhas"`);
+        await queryRunner.query(`ALTER TABLE "temporary_campanhas" RENAME TO "campanhas"`);
+        await queryRunner.query(`CREATE UNIQUE INDEX "IDX_d4a462e2383b0dde13e88d2860" ON "campanhas" ("codigo") `);
+        await queryRunner.query(`DROP INDEX "IDX_446adfc18b35418aac32ae0b7b"`);
+        await queryRunner.query(`CREATE TABLE "temporary_usuarios" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "nome" varchar(120) NOT NULL, "email" varchar(160) NOT NULL, "senha_hash" varchar(100) NOT NULL, "telefone" varchar(20), "perfil" varchar CHECK( "perfil" IN ('CLIENTE','ATENDENTE','COZINHA','GERENTE','ADMIN','TOTEM') ) NOT NULL, "unidade_id" integer, "ativo" boolean NOT NULL DEFAULT (1), "versao_termos_aceita" varchar(10), "termos_aceitos_em" datetime, "anonimizado_em" datetime, "criado_em" datetime NOT NULL DEFAULT (datetime('now')), "atualizado_em" datetime NOT NULL DEFAULT (datetime('now')), "data_nascimento" varchar(10), CONSTRAINT "FK_824563678d5b43bf09729ce7217" FOREIGN KEY ("unidade_id") REFERENCES "unidades" ("id") ON DELETE RESTRICT ON UPDATE NO ACTION)`);
+        await queryRunner.query(`INSERT INTO "temporary_usuarios"("id", "nome", "email", "senha_hash", "telefone", "perfil", "unidade_id", "ativo", "versao_termos_aceita", "termos_aceitos_em", "anonimizado_em", "criado_em", "atualizado_em") SELECT "id", "nome", "email", "senha_hash", "telefone", "perfil", "unidade_id", "ativo", "versao_termos_aceita", "termos_aceitos_em", "anonimizado_em", "criado_em", "atualizado_em" FROM "usuarios"`);
+        await queryRunner.query(`DROP TABLE "usuarios"`);
+        await queryRunner.query(`ALTER TABLE "temporary_usuarios" RENAME TO "usuarios"`);
+        await queryRunner.query(`CREATE UNIQUE INDEX "IDX_446adfc18b35418aac32ae0b7b" ON "usuarios" ("email") `);
+        await queryRunner.query(`DROP INDEX "IDX_750b0e1ec48b90640360b3df8f"`);
+        await queryRunner.query(`CREATE TABLE "temporary_produtos" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "nome" varchar(120) NOT NULL, "descricao" varchar(400), "categoria" varchar CHECK( "categoria" IN ('TAPIOCAS','CUSCUZ','PRATOS','SALGADOS','DOCES','BEBIDAS') ) NOT NULL, "sazonal" boolean NOT NULL DEFAULT (0), "mes_inicio" integer, "mes_fim" integer, "ativo" boolean NOT NULL DEFAULT (1), "criado_em" datetime NOT NULL DEFAULT (datetime('now')), "atualizado_em" datetime NOT NULL DEFAULT (datetime('now')), "exige_cozinha_completa" boolean NOT NULL DEFAULT (0), CONSTRAINT "CHK_produto_sazonalidade" CHECK ((sazonal = 0 OR mes_inicio BETWEEN 1 AND 12 AND mes_fim BETWEEN 1 AND 12)))`);
+        await queryRunner.query(`INSERT INTO "temporary_produtos"("id", "nome", "descricao", "categoria", "sazonal", "mes_inicio", "mes_fim", "ativo", "criado_em", "atualizado_em") SELECT "id", "nome", "descricao", "categoria", "sazonal", "mes_inicio", "mes_fim", "ativo", "criado_em", "atualizado_em" FROM "produtos"`);
+        await queryRunner.query(`DROP TABLE "produtos"`);
+        await queryRunner.query(`ALTER TABLE "temporary_produtos" RENAME TO "produtos"`);
+        await queryRunner.query(`CREATE UNIQUE INDEX "IDX_750b0e1ec48b90640360b3df8f" ON "produtos" ("nome") `);
+        await queryRunner.query(`CREATE TABLE "temporary_itens_cardapio" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "unidade_id" integer NOT NULL, "produto_id" integer NOT NULL, "preco_centavos" integer NOT NULL, "disponivel" boolean NOT NULL DEFAULT (1), "atualizado_em" datetime NOT NULL DEFAULT (datetime('now')), "variacao_regional" varchar(200), CONSTRAINT "UQ_cardapio_unidade_produto" UNIQUE ("unidade_id", "produto_id"), CONSTRAINT "CHK_cardapio_preco" CHECK ((preco_centavos > 0)), CONSTRAINT "FK_344db14fa52e1f760b7226bd2d8" FOREIGN KEY ("produto_id") REFERENCES "produtos" ("id") ON DELETE RESTRICT ON UPDATE NO ACTION, CONSTRAINT "FK_ebdfe3ace68c51138e050789dc6" FOREIGN KEY ("unidade_id") REFERENCES "unidades" ("id") ON DELETE CASCADE ON UPDATE NO ACTION)`);
+        await queryRunner.query(`INSERT INTO "temporary_itens_cardapio"("id", "unidade_id", "produto_id", "preco_centavos", "disponivel", "atualizado_em") SELECT "id", "unidade_id", "produto_id", "preco_centavos", "disponivel", "atualizado_em" FROM "itens_cardapio"`);
+        await queryRunner.query(`DROP TABLE "itens_cardapio"`);
+        await queryRunner.query(`ALTER TABLE "temporary_itens_cardapio" RENAME TO "itens_cardapio"`);
+        await queryRunner.query(`DROP INDEX "IDX_401e33476c06a96fe36e9a3908"`);
+        await queryRunner.query(`DROP INDEX "IDX_4ba913e00f845957b5c12af220"`);
+        await queryRunner.query(`DROP INDEX "IDX_9b55cc67c5195277908f829e83"`);
+        await queryRunner.query(`CREATE TABLE "temporary_logs_auditoria" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "acao" varchar CHECK( "acao" IN ('LOGIN_SUCESSO','LOGIN_FALHA','USUARIO_CADASTRADO','FUNCIONARIO_CADASTRADO','CONSENTIMENTO_ALTERADO','DADOS_PESSOAIS_ACESSADOS','DADOS_PESSOAIS_EXPORTADOS','DADOS_PESSOAIS_ATUALIZADOS','USUARIO_ANONIMIZADO','PRODUTO_CRIADO','PRODUTO_ATUALIZADO','CARDAPIO_ATUALIZADO','ESTOQUE_MOVIMENTADO','CAMPANHA_CRIADA','RELATORIO_CONSULTADO','PEDIDO_CRIADO','PEDIDO_STATUS_ALTERADO','PEDIDO_CANCELADO','PAGAMENTO_APROVADO','PAGAMENTO_RECUSADO','PAGAMENTO_FALHA_COMUNICACAO','PAGAMENTO_ESTORNADO') ) NOT NULL, "entidade" varchar(40) NOT NULL, "entidade_id" integer, "usuario_id" integer, "perfil" varchar CHECK( "perfil" IN ('CLIENTE','ATENDENTE','COZINHA','GERENTE','ADMIN','TOTEM') ), "unidade_id" integer, "detalhes" text, "ip" varchar(45), "request_id" varchar(64), "criado_em" datetime NOT NULL DEFAULT (datetime('now')))`);
+        await queryRunner.query(`INSERT INTO "temporary_logs_auditoria"("id", "acao", "entidade", "entidade_id", "usuario_id", "perfil", "unidade_id", "detalhes", "ip", "request_id", "criado_em") SELECT "id", "acao", "entidade", "entidade_id", "usuario_id", "perfil", "unidade_id", "detalhes", "ip", "request_id", "criado_em" FROM "logs_auditoria"`);
+        await queryRunner.query(`DROP TABLE "logs_auditoria"`);
+        await queryRunner.query(`ALTER TABLE "temporary_logs_auditoria" RENAME TO "logs_auditoria"`);
+        await queryRunner.query(`CREATE INDEX "IDX_4ba913e00f845957b5c12af220" ON "logs_auditoria" ("entidade", "entidade_id") `);
+        await queryRunner.query(`CREATE INDEX "IDX_9b55cc67c5195277908f829e83" ON "logs_auditoria" ("unidade_id", "criado_em") `);
+        await queryRunner.query(`CREATE INDEX "IDX_401e33476c06a96fe36e9a3908" ON "logs_auditoria" ("acao", "criado_em") `);
+    }
+
+    public async down(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.query(`DROP INDEX "IDX_401e33476c06a96fe36e9a3908"`);
+        await queryRunner.query(`DROP INDEX "IDX_9b55cc67c5195277908f829e83"`);
+        await queryRunner.query(`DROP INDEX "IDX_4ba913e00f845957b5c12af220"`);
+        await queryRunner.query(`CREATE TABLE "temporary_logs_auditoria" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "acao" varchar CHECK( "acao" IN ('LOGIN_SUCESSO','LOGIN_FALHA','USUARIO_CADASTRADO','FUNCIONARIO_CADASTRADO','CONSENTIMENTO_ALTERADO','DADOS_PESSOAIS_ACESSADOS','DADOS_PESSOAIS_EXPORTADOS','USUARIO_ANONIMIZADO','PRODUTO_CRIADO','PRODUTO_ATUALIZADO','CARDAPIO_ATUALIZADO','ESTOQUE_MOVIMENTADO','CAMPANHA_CRIADA','PEDIDO_CRIADO','PEDIDO_STATUS_ALTERADO','PEDIDO_CANCELADO','PAGAMENTO_APROVADO','PAGAMENTO_RECUSADO','PAGAMENTO_FALHA_COMUNICACAO','PAGAMENTO_ESTORNADO') ) NOT NULL, "entidade" varchar(40) NOT NULL, "entidade_id" integer, "usuario_id" integer, "perfil" varchar CHECK( "perfil" IN ('CLIENTE','ATENDENTE','COZINHA','GERENTE','ADMIN','TOTEM') ), "unidade_id" integer, "detalhes" text, "ip" varchar(45), "request_id" varchar(64), "criado_em" datetime NOT NULL DEFAULT (datetime('now')))`);
+        await queryRunner.query(`INSERT INTO "temporary_logs_auditoria"("id", "acao", "entidade", "entidade_id", "usuario_id", "perfil", "unidade_id", "detalhes", "ip", "request_id", "criado_em") SELECT "id", "acao", "entidade", "entidade_id", "usuario_id", "perfil", "unidade_id", "detalhes", "ip", "request_id", "criado_em" FROM "logs_auditoria"`);
+        await queryRunner.query(`DROP TABLE "logs_auditoria"`);
+        await queryRunner.query(`ALTER TABLE "temporary_logs_auditoria" RENAME TO "logs_auditoria"`);
+        await queryRunner.query(`CREATE INDEX "IDX_9b55cc67c5195277908f829e83" ON "logs_auditoria" ("unidade_id", "criado_em") `);
+        await queryRunner.query(`CREATE INDEX "IDX_4ba913e00f845957b5c12af220" ON "logs_auditoria" ("entidade", "entidade_id") `);
+        await queryRunner.query(`CREATE INDEX "IDX_401e33476c06a96fe36e9a3908" ON "logs_auditoria" ("acao", "criado_em") `);
+        await queryRunner.query(`CREATE TABLE "temporary_itens_cardapio" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "unidade_id" integer NOT NULL, "produto_id" integer NOT NULL, "preco_centavos" integer NOT NULL, "disponivel" boolean NOT NULL DEFAULT (1), "atualizado_em" datetime NOT NULL DEFAULT (datetime('now')), CONSTRAINT "UQ_cardapio_unidade_produto" UNIQUE ("unidade_id", "produto_id"), CONSTRAINT "CHK_cardapio_preco" CHECK ((preco_centavos > 0)), CONSTRAINT "FK_344db14fa52e1f760b7226bd2d8" FOREIGN KEY ("produto_id") REFERENCES "produtos" ("id") ON DELETE RESTRICT ON UPDATE NO ACTION, CONSTRAINT "FK_ebdfe3ace68c51138e050789dc6" FOREIGN KEY ("unidade_id") REFERENCES "unidades" ("id") ON DELETE CASCADE ON UPDATE NO ACTION)`);
+        await queryRunner.query(`INSERT INTO "temporary_itens_cardapio"("id", "unidade_id", "produto_id", "preco_centavos", "disponivel", "atualizado_em") SELECT "id", "unidade_id", "produto_id", "preco_centavos", "disponivel", "atualizado_em" FROM "itens_cardapio"`);
+        await queryRunner.query(`DROP TABLE "itens_cardapio"`);
+        await queryRunner.query(`ALTER TABLE "temporary_itens_cardapio" RENAME TO "itens_cardapio"`);
+        await queryRunner.query(`DROP INDEX "IDX_750b0e1ec48b90640360b3df8f"`);
+        await queryRunner.query(`CREATE TABLE "temporary_produtos" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "nome" varchar(120) NOT NULL, "descricao" varchar(400), "categoria" varchar CHECK( "categoria" IN ('TAPIOCAS','CUSCUZ','PRATOS','SALGADOS','DOCES','BEBIDAS') ) NOT NULL, "sazonal" boolean NOT NULL DEFAULT (0), "mes_inicio" integer, "mes_fim" integer, "ativo" boolean NOT NULL DEFAULT (1), "criado_em" datetime NOT NULL DEFAULT (datetime('now')), "atualizado_em" datetime NOT NULL DEFAULT (datetime('now')), CONSTRAINT "CHK_produto_sazonalidade" CHECK ((sazonal = 0 OR mes_inicio BETWEEN 1 AND 12 AND mes_fim BETWEEN 1 AND 12)))`);
+        await queryRunner.query(`INSERT INTO "temporary_produtos"("id", "nome", "descricao", "categoria", "sazonal", "mes_inicio", "mes_fim", "ativo", "criado_em", "atualizado_em") SELECT "id", "nome", "descricao", "categoria", "sazonal", "mes_inicio", "mes_fim", "ativo", "criado_em", "atualizado_em" FROM "produtos"`);
+        await queryRunner.query(`DROP TABLE "produtos"`);
+        await queryRunner.query(`ALTER TABLE "temporary_produtos" RENAME TO "produtos"`);
+        await queryRunner.query(`CREATE UNIQUE INDEX "IDX_750b0e1ec48b90640360b3df8f" ON "produtos" ("nome") `);
+        await queryRunner.query(`DROP INDEX "IDX_446adfc18b35418aac32ae0b7b"`);
+        await queryRunner.query(`CREATE TABLE "temporary_usuarios" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "nome" varchar(120) NOT NULL, "email" varchar(160) NOT NULL, "senha_hash" varchar(100) NOT NULL, "telefone" varchar(20), "perfil" varchar CHECK( "perfil" IN ('CLIENTE','ATENDENTE','COZINHA','GERENTE','ADMIN','TOTEM') ) NOT NULL, "unidade_id" integer, "ativo" boolean NOT NULL DEFAULT (1), "versao_termos_aceita" varchar(10), "termos_aceitos_em" datetime, "anonimizado_em" datetime, "criado_em" datetime NOT NULL DEFAULT (datetime('now')), "atualizado_em" datetime NOT NULL DEFAULT (datetime('now')), CONSTRAINT "FK_824563678d5b43bf09729ce7217" FOREIGN KEY ("unidade_id") REFERENCES "unidades" ("id") ON DELETE RESTRICT ON UPDATE NO ACTION)`);
+        await queryRunner.query(`INSERT INTO "temporary_usuarios"("id", "nome", "email", "senha_hash", "telefone", "perfil", "unidade_id", "ativo", "versao_termos_aceita", "termos_aceitos_em", "anonimizado_em", "criado_em", "atualizado_em") SELECT "id", "nome", "email", "senha_hash", "telefone", "perfil", "unidade_id", "ativo", "versao_termos_aceita", "termos_aceitos_em", "anonimizado_em", "criado_em", "atualizado_em" FROM "usuarios"`);
+        await queryRunner.query(`DROP TABLE "usuarios"`);
+        await queryRunner.query(`ALTER TABLE "temporary_usuarios" RENAME TO "usuarios"`);
+        await queryRunner.query(`CREATE UNIQUE INDEX "IDX_446adfc18b35418aac32ae0b7b" ON "usuarios" ("email") `);
+        await queryRunner.query(`DROP INDEX "IDX_d4a462e2383b0dde13e88d2860"`);
+        await queryRunner.query(`CREATE TABLE "temporary_campanhas" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "codigo" varchar(30) NOT NULL, "descricao" varchar(200) NOT NULL, "percentual_desconto" integer NOT NULL, "inicio" datetime NOT NULL, "fim" datetime NOT NULL, "unidade_id" integer, "canal_pedido" varchar CHECK( "canal_pedido" IN ('APP','TOTEM','BALCAO','PICKUP','WEB') ), "valor_minimo_centavos" integer NOT NULL DEFAULT (0), "ativa" boolean NOT NULL DEFAULT (1), "criado_em" datetime NOT NULL DEFAULT (datetime('now')), CONSTRAINT "CHK_campanha_periodo" CHECK ((fim > inicio)), CONSTRAINT "CHK_campanha_percentual" CHECK ((percentual_desconto BETWEEN 1 AND 50)), CONSTRAINT "FK_50de8f6866677d9097862db8b80" FOREIGN KEY ("unidade_id") REFERENCES "unidades" ("id") ON DELETE CASCADE ON UPDATE NO ACTION)`);
+        await queryRunner.query(`INSERT INTO "temporary_campanhas"("id", "codigo", "descricao", "percentual_desconto", "inicio", "fim", "unidade_id", "canal_pedido", "valor_minimo_centavos", "ativa", "criado_em") SELECT "id", "codigo", "descricao", "percentual_desconto", "inicio", "fim", "unidade_id", "canal_pedido", "valor_minimo_centavos", "ativa", "criado_em" FROM "campanhas"`);
+        await queryRunner.query(`DROP TABLE "campanhas"`);
+        await queryRunner.query(`ALTER TABLE "temporary_campanhas" RENAME TO "campanhas"`);
+        await queryRunner.query(`CREATE UNIQUE INDEX "IDX_d4a462e2383b0dde13e88d2860" ON "campanhas" ("codigo") `);
+        await queryRunner.query(`CREATE TABLE "temporary_unidades" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "nome" varchar(120) NOT NULL, "cidade" varchar(80) NOT NULL, "uf" varchar(2) NOT NULL, "tipo" varchar CHECK( "tipo" IN ('PROPRIA','FRANQUIA') ) NOT NULL, "horario_funcionamento" varchar(20), "ativa" boolean NOT NULL DEFAULT (1), "criado_em" datetime NOT NULL DEFAULT (datetime('now')))`);
+        await queryRunner.query(`INSERT INTO "temporary_unidades"("id", "nome", "cidade", "uf", "tipo", "horario_funcionamento", "ativa", "criado_em") SELECT "id", "nome", "cidade", "uf", "tipo", "horario_funcionamento", "ativa", "criado_em" FROM "unidades"`);
+        await queryRunner.query(`DROP TABLE "unidades"`);
+        await queryRunner.query(`ALTER TABLE "temporary_unidades" RENAME TO "unidades"`);
+    }
+
+}

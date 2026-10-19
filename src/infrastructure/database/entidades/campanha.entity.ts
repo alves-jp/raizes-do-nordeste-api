@@ -1,5 +1,5 @@
 import { Check, Column, CreateDateColumn, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { CanalPedido } from '../../../domain/enums';
+import { CanalPedido, NivelFidelidade } from '../../../domain/enums';
 import { Unidade } from './unidade.entity';
 
 /** Campanha promocional definida pela matriz e aplicada por código no pedido. */
@@ -40,6 +40,17 @@ export class Campanha {
 
   @Column({ type: 'integer', default: 0 })
   valorMinimoCentavos: number;
+
+  /** Segmentação: nível mínimo de fidelidade do cliente (nulo = sem restrição). */
+  @Column({ type: 'simple-enum', enum: NivelFidelidade, nullable: true })
+  nivelMinimoFidelidade: NivelFidelidade | null;
+
+  /** Segmentação por faixa etária (nulo = sem restrição). Exige consentimento MARKETING. */
+  @Column({ type: 'integer', nullable: true })
+  idadeMinima: number | null;
+
+  @Column({ type: 'integer', nullable: true })
+  idadeMaxima: number | null;
 
   @Column({ default: true })
   ativa: boolean;

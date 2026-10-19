@@ -4,8 +4,9 @@ import { Unidade } from './unidade.entity';
 
 /**
  * Usuário do sistema (clientes, funcionários e contas de totem).
- * LGPD — minimização: coletamos apenas nome, e-mail e (opcionalmente) telefone.
- * CPF, endereço e data de nascimento NÃO são necessários para a finalidade e não são coletados.
+ * LGPD — minimização: coletamos apenas nome, e-mail e, opcionalmente, telefone e data de nascimento.
+ * A data de nascimento só é aceita com consentimento MARKETING (segmentação por faixa etária) e é
+ * apagada quando esse consentimento é revogado. CPF e endereço não são coletados.
  */
 @Entity('usuarios')
 export class Usuario {
@@ -25,6 +26,10 @@ export class Usuario {
 
   @Column({ type: 'varchar', length: 20, nullable: true })
   telefone: string | null;
+
+  /** Opcional (AAAA-MM-DD); usada apenas para calcular a faixa etária em campanhas segmentadas. */
+  @Column({ type: 'varchar', length: 10, nullable: true })
+  dataNascimento: string | null;
 
   @Column({ type: 'simple-enum', enum: Perfil })
   perfil: Perfil;

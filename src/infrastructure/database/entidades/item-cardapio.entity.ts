@@ -30,6 +30,13 @@ export class ItemCardapio {
   @Column({ type: 'integer' })
   precoCentavos: number;
 
+  /**
+   * Variação regional da receita nesta unidade (ex.: cuscuz com manteiga de garrafa em Recife,
+   * com queijo coalho em Fortaleza). O produto e o preço base continuam padronizados pela matriz.
+   */
+  @Column({ type: 'varchar', length: 200, nullable: true })
+  variacaoRegional: string | null;
+
   /** Permite ao gerente pausar um item sem removê-lo do cardápio. */
   @Column({ default: true })
   disponivel: boolean;

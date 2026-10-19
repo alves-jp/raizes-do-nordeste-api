@@ -28,6 +28,10 @@ export class Produto {
   @Column({ type: 'integer', nullable: true })
   mesFim: number | null;
 
+  /** Preparo que depende de cozinha completa (fogão, forno, panelas grandes). */
+  @Column({ default: false })
+  exigeCozinhaCompleta: boolean;
+
   @Column({ default: true })
   ativo: boolean;
 
