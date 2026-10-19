@@ -1,6 +1,6 @@
 /**
  * Mascaramento de dados pessoais para logs, auditoria e listagens (LGPD — minimização).
- * Ex.: "ana.souza@email.com" → "an***@email.com"; "(71) 99876-5432" → "(**) *****-5432".
+ * Ex.: "ana.souza@email.com" → "an***@email.com"; "(81) 99876-5432" → "(**) *****-5432".
  */
 export function mascararEmail(email: string | null | undefined): string | null {
   if (!email) return null;

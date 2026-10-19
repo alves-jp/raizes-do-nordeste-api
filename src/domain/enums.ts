@@ -58,6 +58,36 @@ export enum TipoUnidade {
   FRANQUIA = 'FRANQUIA',
 }
 
+/**
+ * Formato operacional da loja (estudo de caso: "algumas possuem cozinha completa,
+ * outras operam em formato reduzido"). Produtos que exigem cozinha completa não
+ * podem entrar no cardápio de uma unidade REDUZIDA.
+ */
+export enum FormatoUnidade {
+  COMPLETA = 'COMPLETA',
+  REDUZIDA = 'REDUZIDA',
+}
+
+/** Regiões do IBGE, usadas na consolidação de vendas da matriz. */
+export enum Regiao {
+  NORDESTE = 'NORDESTE',
+  NORTE = 'NORTE',
+  CENTRO_OESTE = 'CENTRO_OESTE',
+  SUDESTE = 'SUDESTE',
+  SUL = 'SUL',
+}
+
+/**
+ * Níveis do programa de fidelidade, definidos pela frequência de consumo
+ * (pedidos pagos nos últimos 90 dias). Quanto maior o nível, maior o desconto
+ * obtido com os mesmos pontos (desconto progressivo).
+ */
+export enum NivelFidelidade {
+  BRONZE = 'BRONZE',
+  PRATA = 'PRATA',
+  OURO = 'OURO',
+}
+
 export enum CategoriaProduto {
   TAPIOCAS = 'TAPIOCAS',
   CUSCUZ = 'CUSCUZ',
@@ -100,12 +130,14 @@ export enum AcaoAuditoria {
   CONSENTIMENTO_ALTERADO = 'CONSENTIMENTO_ALTERADO',
   DADOS_PESSOAIS_ACESSADOS = 'DADOS_PESSOAIS_ACESSADOS',
   DADOS_PESSOAIS_EXPORTADOS = 'DADOS_PESSOAIS_EXPORTADOS',
+  DADOS_PESSOAIS_ATUALIZADOS = 'DADOS_PESSOAIS_ATUALIZADOS',
   USUARIO_ANONIMIZADO = 'USUARIO_ANONIMIZADO',
   PRODUTO_CRIADO = 'PRODUTO_CRIADO',
   PRODUTO_ATUALIZADO = 'PRODUTO_ATUALIZADO',
   CARDAPIO_ATUALIZADO = 'CARDAPIO_ATUALIZADO',
   ESTOQUE_MOVIMENTADO = 'ESTOQUE_MOVIMENTADO',
   CAMPANHA_CRIADA = 'CAMPANHA_CRIADA',
+  RELATORIO_CONSULTADO = 'RELATORIO_CONSULTADO',
   PEDIDO_CRIADO = 'PEDIDO_CRIADO',
   PEDIDO_STATUS_ALTERADO = 'PEDIDO_STATUS_ALTERADO',
   PEDIDO_CANCELADO = 'PEDIDO_CANCELADO',
