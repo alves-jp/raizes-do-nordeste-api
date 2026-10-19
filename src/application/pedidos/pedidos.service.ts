@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, In, Repository } from 'typeorm';
-import { calcularDescontoDeCampanha } from '../../domain/campanha/regras-campanha';
+import { calcularDescontoDeCampanha, campanhaEhSegmentada, PerfilDoCliente } from '../../domain/campanha/regras-campanha';
+import { calcularIdade } from '../../domain/cliente/idade';
+import { validarProdutoNoFormato } from '../../domain/unidade/regras-unidade';
 import {
   AcaoAuditoria,
   CanalPedido,
@@ -87,10 +89,13 @@ export class PedidosService {
 
       const itens = consolidarItens(dados.itens);
       validarItens(itens);
-      const precificados = await this.precificarItens(em, dados.unidadeId, itens);
+      const precificados = await this.precificarItens(em, unidade, itens);
       const subtotal = calcularSubtotal(precificados);
 
       const agora = this.relogio.agora();
+      // Perfil do cliente só é montado quando necessário (campanha segmentada ou resgate) e nunca é gravado no pedido.
+      let perfilDoCliente: (PerfilDoCliente & { valorDoPontoEmCentavos: number }) | null = null;
+      const obterPerfil = async () => (perfilDoCliente ??= await this.perfilDoCliente(em, clienteId!, agora));
       let campanha: Campanha | null = null;
       let descontoCampanha = 0;
       if (dados.codigoCampanha) {
@@ -100,7 +105,8 @@ export class PedidosService {
             { field: 'codigoCampanha', issue: 'Código não encontrado' },
           ]);
         }
-        descontoCampanha = calcularDescontoDeCampanha(campanha, { unidadeId: dados.unidadeId, canalPedido: dados.canalPedido, subtotalCentavos: subtotal, agora });
+        const cliente = campanhaEhSegmentada(campanha) && clienteId ? await obterPerfil() : null;
+        descontoCampanha = calcularDescontoDeCampanha(campanha, { unidadeId: dados.unidadeId, canalPedido: dados.canalPedido, subtotalCentavos: subtotal, agora, cliente });
       }
 
       let descontoPontos = 0;
@@ -117,7 +123,8 @@ export class PedidosService {
           ]);
         }
         const saldo = await this.fidelidade.saldo(clienteId, em);
-        descontoPontos = calcularDescontoPorPontos(pontosResgate, saldo, subtotal - descontoCampanha);
+        const { valorDoPontoEmCentavos } = await obterPerfil();
+        descontoPontos = calcularDescontoPorPontos(pontosResgate, saldo, subtotal - descontoCampanha, valorDoPontoEmCentavos);
       }
 
       const pedido = await em.save(
@@ -136,6 +143,8 @@ export class PedidosService {
           pontosResgatados: pontosResgate,
           observacao: dados.observacao?.trim() || null,
           chaveIdempotencia: chaveIdempotencia ?? null,
+          // Data do pedido vem do relógio da aplicação: relatórios, filtros e janela de fidelidade usam a mesma fonte de tempo.
+          criadoEm: agora,
           itens: precificados.map((i) =>
             em.create(ItemPedido, {
               produtoId: i.produtoId,
@@ -161,7 +170,10 @@ export class PedidosService {
           total: paraReais(pedido.totalCentavos),
           itens: precificados.length,
           campanha: campanha?.codigo ?? null,
+          campanhaSegmentada: campanha ? campanhaEhSegmentada(campanha) : false,
           pontosResgatados: pontosResgate,
+          // Apenas o nível (dado derivado); idade e data de nascimento nunca vão para a auditoria.
+          nivelFidelidade: (perfilDoCliente as PerfilDoCliente | null)?.nivel ?? null,
         },
       });
       return { pedido: visaoDoPedido(await this.carregar(em, pedido.id)), repetido: false };
@@ -344,7 +356,23 @@ export class PedidosService {
     return cliente.id;
   }
 
-  private async precificarItens(em: EntityManager, unidadeId: number, itens: { produtoId: number; quantidade: number }[]) {
+  /** Nível (frequência), idade (derivada da data de nascimento opcional) e consentimento MARKETING do cliente. */
+  private async perfilDoCliente(em: EntityManager, clienteId: number, agora: Date) {
+    const [nivel, usuario, consentiuMarketing] = await Promise.all([
+      this.fidelidade.nivel(clienteId, em),
+      em.findOne(Usuario, { where: { id: clienteId } }),
+      this.fidelidade.temConsentimento(clienteId, FinalidadeConsentimento.MARKETING, em),
+    ]);
+    return {
+      nivel: nivel.nivel,
+      valorDoPontoEmCentavos: nivel.valorDoPontoEmCentavos,
+      idade: usuario?.dataNascimento ? calcularIdade(usuario.dataNascimento, agora) : null,
+      consentiuMarketing,
+    };
+  }
+
+  private async precificarItens(em: EntityManager, unidade: Unidade, itens: { produtoId: number; quantidade: number }[]) {
+    const unidadeId = unidade.id;
     const ids = itens.map((i) => i.produtoId);
     const produtos = await em.find(Produto, { where: { id: In(ids) } });
     const inexistentes = ids.filter((id) => !produtos.some((p) => p.id === id));
@@ -368,6 +396,7 @@ export class PedidosService {
           { field: campo, issue: !noCardapio ? 'Produto fora do cardápio da unidade' : 'Produto pausado/inativo' },
         ]);
       }
+      validarProdutoNoFormato(produto, unidade, campo);
       if (!estaEmTemporada(produto, agora)) {
         throw new ErroDeDominio(NaturezaErro.REGRA_DE_NEGOCIO, 'PRODUTO_FORA_DE_TEMPORADA', `"${produto.nome}" é sazonal e só é vendido entre os meses ${produto.mesInicio} e ${produto.mesFim}.`, [
           { field: campo, issue: `Temporada: mês ${produto.mesInicio} a ${produto.mesFim}` },

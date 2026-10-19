@@ -49,10 +49,18 @@ export class CadastroClienteDto {
   @Matches(SENHA_FORTE, { message: MSG_SENHA })
   senha: string;
 
-  @ApiPropertyOptional({ example: '(71) 98888-7777', description: 'Opcional — usado apenas para avisar que o pedido está pronto' })
+  @ApiPropertyOptional({ example: '(81) 98888-7777', description: 'Opcional — usado apenas para avisar que o pedido está pronto' })
   @IsOptional()
   @Matches(/^[\d\s()+-]{10,20}$/, { message: 'telefone em formato inválido' })
   telefone?: string;
+
+  @ApiPropertyOptional({
+    example: '1998-04-23',
+    description: 'Opcional (AAAA-MM-DD). Só é aceita com consentimentos.marketing = true e serve apenas para campanhas por faixa etária. Maiores de 18 anos.',
+  })
+  @IsOptional()
+  @Matches(/^\d{4}-\d{2}-\d{2}$/, { message: 'dataNascimento deve estar no formato AAAA-MM-DD' })
+  dataNascimento?: string;
 
   @ApiProperty({ example: true, description: 'Aceite obrigatório dos Termos de Uso e da Política de Privacidade (v1.0)' })
   @Equals(true, { message: 'é necessário aceitar os Termos de Uso e a Política de Privacidade' })
@@ -91,6 +99,22 @@ export class CadastroFuncionarioDto {
   @IsInt({ message: 'unidadeId deve ser inteiro' })
   @Min(1)
   unidadeId?: number;
+}
+
+export class AtualizarPerfilDto {
+  @ApiPropertyOptional({ example: '(81) 98888-7777', nullable: true, description: 'null remove o telefone' })
+  @IsOptional()
+  @Matches(/^[\d\s()+-]{10,20}$/, { message: 'telefone em formato inválido' })
+  telefone?: string | null;
+
+  @ApiPropertyOptional({
+    example: '1998-04-23',
+    nullable: true,
+    description: 'AAAA-MM-DD; exige consentimento MARKETING vigente; null apaga o dado',
+  })
+  @IsOptional()
+  @Matches(/^\d{4}-\d{2}-\d{2}$/, { message: 'dataNascimento deve estar no formato AAAA-MM-DD' })
+  dataNascimento?: string | null;
 }
 
 export class ConsentimentoDto {

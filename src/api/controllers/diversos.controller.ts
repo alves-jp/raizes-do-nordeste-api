@@ -19,14 +19,30 @@ export class FidelidadeController {
 
   @Get('saldo')
   @Perfis(Perfil.CLIENTE)
-  @ApiOperation({ summary: 'Saldo de pontos e regras do programa "Cliente Raiz"' })
+  @ApiOperation({
+    summary: 'Saldo, nível e regras do programa "Cliente Raiz"',
+    description: 'O nível (BRONZE, PRATA, OURO) depende dos pedidos pagos nos últimos 90 dias e define o valor do ponto no resgate (desconto progressivo).',
+  })
   @ApiOkResponse({
     schema: {
       example: {
         saldo: 186,
-        saldoEmReais: 18.6,
+        saldoEmReais: 22.32,
         participando: true,
-        regras: { pontosPorReal: '1 ponto a cada R$ 2.00', valorDoPonto: 0.1, resgateMinimo: 50, descontoMaximoPercentual: 30 },
+        nivel: 'PRATA',
+        pedidosPagosUltimos90Dias: 5,
+        valorDoPonto: 0.12,
+        proximoNivel: { nivel: 'OURO', pedidosQueFaltam: 5 },
+        regras: {
+          pontosPorReal: '1 ponto a cada R$ 2.00',
+          niveis: [
+            { nivel: 'BRONZE', pedidosPagosEm90Dias: 0, valorDoPonto: 0.1 },
+            { nivel: 'PRATA', pedidosPagosEm90Dias: 4, valorDoPonto: 0.12 },
+            { nivel: 'OURO', pedidosPagosEm90Dias: 10, valorDoPonto: 0.15 },
+          ],
+          resgateMinimo: 50,
+          descontoMaximoPercentual: 30,
+        },
       },
     },
   })

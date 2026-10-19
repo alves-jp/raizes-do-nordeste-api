@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { AcaoAuditoria, CategoriaProduto } from '../../domain/enums';
+import { AcaoAuditoria, CategoriaProduto, FormatoUnidade } from '../../domain/enums';
 import { ErroDeDominio, NaturezaErro, naoEncontrado } from '../../domain/erros';
 import { paraCentavos, paraReais } from '../../domain/dinheiro';
 import { estaEmTemporada } from '../../domain/produto/sazonalidade';
+import { regiaoDaUf, validarProdutoNoFormato } from '../../domain/unidade/regras-unidade';
 import { Estoque, ItemCardapio, Produto, Unidade } from '../../infrastructure/database/entidades';
 import { UnidadeDeTrabalho } from '../../infrastructure/database/unidade-de-trabalho';
 import { AuditoriaService } from '../auditoria/auditoria.service';
@@ -19,7 +20,23 @@ export interface DadosProduto {
   sazonal?: boolean;
   mesInicio?: number | null;
   mesFim?: number | null;
+  exigeCozinhaCompleta?: boolean;
   ativo?: boolean;
+}
+
+/** Visão pública da unidade (a meta mensal é informação interna e só aparece nos relatórios). */
+export function visaoDaUnidade(u: Unidade) {
+  return {
+    id: u.id,
+    nome: u.nome,
+    cidade: u.cidade,
+    uf: u.uf,
+    regiao: regiaoDaUf(u.uf),
+    tipo: u.tipo,
+    formato: u.formato,
+    horarioFuncionamento: u.horarioFuncionamento,
+    ativa: u.ativa,
+  };
 }
 
 export type MotivoIndisponibilidade = 'PAUSADO_PELA_UNIDADE' | 'PRODUTO_INATIVO' | 'FORA_DE_TEMPORADA' | 'SEM_ESTOQUE';
@@ -37,9 +54,13 @@ export class CatalogoService {
 
   // ------------------------------- Unidades -------------------------------
 
-  async listarUnidades(paginacao: Paginacao): Promise<Pagina<Unidade>> {
+  async listarUnidades(paginacao: Paginacao): Promise<Pagina<ReturnType<typeof visaoDaUnidade>>> {
     const [itens, total] = await this.unidades.findAndCount({ where: { ativa: true }, order: { id: 'ASC' }, ...deslocamento(paginacao) });
-    return paginar(itens, total, paginacao);
+    return paginar(itens.map(visaoDaUnidade), total, paginacao);
+  }
+
+  async detalharUnidade(id: number) {
+    return visaoDaUnidade(await this.obterUnidade(id));
   }
 
   async obterUnidade(id: number): Promise<Unidade> {
@@ -75,6 +96,7 @@ export class CatalogoService {
         descricao: item.produto!.descricao,
         categoria: item.produto!.categoria,
         preco: paraReais(item.precoCentavos),
+        variacaoRegional: item.variacaoRegional,
         sazonal: item.produto!.sazonal,
         disponivel: motivo === null,
         motivoIndisponibilidade: motivo,
@@ -83,7 +105,7 @@ export class CatalogoService {
     if (filtros.somenteDisponiveis) itens = itens.filter((i) => i.disponivel);
     const { skip, take } = deslocamento(paginacao);
     return {
-      unidade: { id: unidade.id, nome: unidade.nome, cidade: unidade.cidade, uf: unidade.uf },
+      unidade: { id: unidade.id, nome: unidade.nome, cidade: unidade.cidade, uf: unidade.uf, formato: unidade.formato },
       ...paginar(itens.slice(skip, skip + take), itens.length, paginacao),
     };
   }
@@ -97,10 +119,16 @@ export class CatalogoService {
   }
 
   /** Gerente (da própria unidade) ou ADMIN inclui/atualiza um produto no cardápio da unidade. */
-  async definirItemDoCardapio(unidadeId: number, produtoId: number, dados: { preco: number; disponivel?: boolean }, ator: Ator) {
+  async definirItemDoCardapio(
+    unidadeId: number,
+    produtoId: number,
+    dados: { preco: number; disponivel?: boolean; variacaoRegional?: string | null },
+    ator: Ator,
+  ) {
     garantirAcessoAUnidade(ator, unidadeId);
-    await this.obterUnidade(unidadeId);
+    const unidade = await this.obterUnidade(unidadeId);
     const produto = await this.obterProduto(produtoId);
+    validarProdutoNoFormato(produto, unidade);
     return this.uow.executar(async (em) => {
       const existente = await em.findOne(ItemCardapio, { where: { unidadeId, produtoId } });
       const item = await em.save(
@@ -108,6 +136,7 @@ export class CatalogoService {
         em.merge(ItemCardapio, existente ?? em.create(ItemCardapio, { unidadeId, produtoId }), {
           precoCentavos: paraCentavos(dados.preco),
           disponivel: dados.disponivel ?? existente?.disponivel ?? true,
+          variacaoRegional: dados.variacaoRegional !== undefined ? dados.variacaoRegional?.trim() || null : (existente?.variacaoRegional ?? null),
         }),
       );
       await this.auditoria.registrar(em, {
@@ -121,9 +150,17 @@ export class CatalogoService {
           precoAnterior: existente ? paraReais(existente.precoCentavos) : null,
           precoNovo: paraReais(item.precoCentavos),
           disponivel: item.disponivel,
+          variacaoRegional: item.variacaoRegional,
         },
       });
-      return { unidadeId, produtoId, nome: produto.nome, preco: paraReais(item.precoCentavos), disponivel: item.disponivel };
+      return {
+        unidadeId,
+        produtoId,
+        nome: produto.nome,
+        preco: paraReais(item.precoCentavos),
+        disponivel: item.disponivel,
+        variacaoRegional: item.variacaoRegional,
+      };
     });
   }
 
@@ -157,6 +194,7 @@ export class CatalogoService {
           sazonal: dados.sazonal ?? false,
           mesInicio: dados.sazonal ? dados.mesInicio! : null,
           mesFim: dados.sazonal ? dados.mesFim! : null,
+          exigeCozinhaCompleta: dados.exigeCozinhaCompleta ?? false,
           ativo: dados.ativo ?? true,
         }),
       );
@@ -172,6 +210,21 @@ export class CatalogoService {
     return this.uow.executar(async (em) => {
       if (dados.nome && dados.nome.trim() !== atual.nome && (await em.exists(Produto, { where: { nome: dados.nome.trim() } }))) {
         throw new ErroDeDominio(NaturezaErro.CONFLITO, 'PRODUTO_JA_EXISTE', `Já existe um produto chamado "${dados.nome}".`);
+      }
+      if (dados.exigeCozinhaCompleta && !atual.exigeCozinhaCompleta) {
+        const emUnidadesReduzidas = await em
+          .createQueryBuilder(ItemCardapio, 'c')
+          .innerJoin(Unidade, 'u', 'u.id = c.unidade_id')
+          .where('c.produto_id = :id AND u.formato = :formato', { id, formato: FormatoUnidade.REDUZIDA })
+          .getCount();
+        if (emUnidadesReduzidas > 0) {
+          throw new ErroDeDominio(
+            NaturezaErro.CONFLITO,
+            'PRODUTO_EM_UNIDADE_REDUZIDA',
+            `O produto está no cardápio de ${emUnidadesReduzidas} unidade(s) em formato reduzido; retire-o desses cardápios antes de exigir cozinha completa.`,
+            [{ field: 'exigeCozinhaCompleta', issue: 'Conflita com cardápios de unidades REDUZIDA' }],
+          );
+        }
       }
       const produto = await em.save(
         Produto,

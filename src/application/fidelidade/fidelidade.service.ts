@@ -1,19 +1,31 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EntityManager, Repository } from 'typeorm';
-import { FinalidadeConsentimento, TipoTransacaoFidelidade } from '../../domain/enums';
-import { calcularPontosGanhos, REGRAS_FIDELIDADE } from '../../domain/fidelidade/regras-fidelidade';
+import { EntityManager, In, MoreThanOrEqual, Repository } from 'typeorm';
+import { FinalidadeConsentimento, StatusPedido, TipoTransacaoFidelidade } from '../../domain/enums';
+import { calcularNivel, calcularPontosGanhos, NIVEIS_FIDELIDADE, REGRAS_FIDELIDADE } from '../../domain/fidelidade/regras-fidelidade';
 import { paraReais } from '../../domain/dinheiro';
 import { Consentimento, Pedido, TransacaoFidelidade } from '../../infrastructure/database/entidades';
 import { Ator } from '../comum/ator';
 import { deslocamento, Pagina, paginar, Paginacao } from '../comum/paginacao';
+import { Relogio } from '../comum/relogio';
+
+/** Status que representam um pedido efetivamente pago (contam para frequência e faturamento). */
+export const STATUS_PAGOS = [StatusPedido.PAGO, StatusPedido.EM_PREPARO, StatusPedido.PRONTO, StatusPedido.ENTREGUE];
 
 /** Programa de fidelidade "Cliente Raiz". Regras puras em domain/fidelidade. */
 @Injectable()
 export class FidelidadeService {
   constructor(
     @InjectRepository(TransacaoFidelidade) private readonly transacoes: Repository<TransacaoFidelidade>,
+    private readonly relogio: Relogio,
   ) {}
+
+  /** Nível do cliente pela frequência de consumo: pedidos pagos nos últimos 90 dias. */
+  async nivel(clienteId: number, em: EntityManager = this.transacoes.manager) {
+    const desde = new Date(this.relogio.agora().getTime() - REGRAS_FIDELIDADE.janelaDeFrequenciaEmDias * 86_400_000);
+    const pedidosPagos = await em.count(Pedido, { where: { clienteId, status: In(STATUS_PAGOS), criadoEm: MoreThanOrEqual(desde) } });
+    return { ...calcularNivel(pedidosPagos), pedidosPagosNaJanela: pedidosPagos };
+  }
 
   async saldo(clienteId: number, em: EntityManager = this.transacoes.manager): Promise<number> {
     const resultado = await em
@@ -39,13 +51,22 @@ export class FidelidadeService {
 
   async resumo(ator: Ator) {
     const saldo = await this.saldo(ator.id);
+    const nivel = await this.nivel(ator.id);
     return {
       saldo,
-      saldoEmReais: paraReais(saldo * REGRAS_FIDELIDADE.valorDoPontoEmCentavos),
+      saldoEmReais: paraReais(saldo * nivel.valorDoPontoEmCentavos),
       participando: await this.temConsentimento(ator.id, FinalidadeConsentimento.FIDELIDADE),
+      nivel: nivel.nivel,
+      pedidosPagosUltimos90Dias: nivel.pedidosPagosNaJanela,
+      valorDoPonto: paraReais(nivel.valorDoPontoEmCentavos),
+      proximoNivel: nivel.proximoNivel,
       regras: {
         pontosPorReal: `1 ponto a cada R$ ${(REGRAS_FIDELIDADE.centavosPorPonto / 100).toFixed(2)}`,
-        valorDoPonto: paraReais(REGRAS_FIDELIDADE.valorDoPontoEmCentavos),
+        niveis: NIVEIS_FIDELIDADE.map((n) => ({
+          nivel: n.nivel,
+          pedidosPagosEm90Dias: n.pedidosMinimos,
+          valorDoPonto: paraReais(n.valorDoPontoEmCentavos),
+        })),
         resgateMinimo: REGRAS_FIDELIDADE.resgateMinimo,
         descontoMaximoPercentual: REGRAS_FIDELIDADE.percentualMaximoDeDesconto,
       },

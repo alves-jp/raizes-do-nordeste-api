@@ -13,11 +13,11 @@ com cardápio e estoque por unidade, pagamento via provedor externo (simulado), 
 | Perfil | E-mail | Senha |
 |---|---|---|
 | ADMIN (matriz) | admin@raizesdonordeste.com.br | Raizes@2026 |
-| GERENTE — Salvador | gerente.salvador@raizesdonordeste.com.br | Raizes@2026 |
-| ATENDENTE — Salvador | atendente.salvador@raizesdonordeste.com.br | Raizes@2026 |
-| COZINHA — Salvador | cozinha.salvador@raizesdonordeste.com.br | Raizes@2026 |
-| TOTEM — Salvador | totem01.salvador@raizesdonordeste.com.br | Raizes@2026 |
 | GERENTE — Recife | gerente.recife@raizesdonordeste.com.br | Raizes@2026 |
+| ATENDENTE — Recife | atendente.recife@raizesdonordeste.com.br | Raizes@2026 |
+| COZINHA — Recife | cozinha.recife@raizesdonordeste.com.br | Raizes@2026 |
+| TOTEM — Recife | totem01.recife@raizesdonordeste.com.br | Raizes@2026 |
+| GERENTE — Fortaleza | gerente.fortaleza@raizesdonordeste.com.br | Raizes@2026 |
 | CLIENTE (participa da fidelidade) | ana.souza@email.com | Raizes@2026 |
 | CLIENTE (não participa) | bruno.costa@email.com | Raizes@2026 |
 

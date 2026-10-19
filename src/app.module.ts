@@ -8,6 +8,7 @@ import { AuditoriaController, CampanhasController, FidelidadeController, SaudeCo
 import { EstoqueController } from './api/controllers/estoque.controller';
 import { PagamentosController } from './api/controllers/pagamentos.controller';
 import { PedidosController } from './api/controllers/pedidos.controller';
+import { RelatoriosController } from './api/controllers/relatorios.controller';
 import { UsuariosController } from './api/controllers/usuarios.controller';
 import { ContextoMiddleware } from './api/http/contexto.middleware';
 import { AutenticacaoGuard } from './api/seguranca/autenticacao.guard';
@@ -21,6 +22,7 @@ import { FidelidadeService } from './application/fidelidade/fidelidade.service';
 import { GatewayDePagamento } from './application/pagamentos/gateway-pagamento.port';
 import { PagamentosService } from './application/pagamentos/pagamentos.service';
 import { PedidosService } from './application/pedidos/pedidos.service';
+import { RelatoriosService } from './application/relatorios/relatorios.service';
 import { UsuariosService } from './application/usuarios/usuarios.service';
 import { ambiente } from './infrastructure/config/ambiente';
 import { ENTIDADES } from './infrastructure/database/entidades';
@@ -63,6 +65,7 @@ export class AppModule implements NestModule {
         PagamentosController,
         FidelidadeController,
         CampanhasController,
+        RelatoriosController,
         AuditoriaController,
         SaudeController,
       ],
@@ -77,6 +80,7 @@ export class AppModule implements NestModule {
         FidelidadeService,
         CampanhasService,
         AuditoriaService,
+        RelatoriosService,
         // Infrastructure
         UnidadeDeTrabalho,
         HasherDeSenha,

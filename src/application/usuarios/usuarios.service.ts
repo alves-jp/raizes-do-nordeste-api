@@ -4,6 +4,7 @@ import { randomBytes } from 'crypto';
 import { EntityManager, In, Repository } from 'typeorm';
 import { AcaoAuditoria, FinalidadeConsentimento, Perfil, PERFIS_DE_UNIDADE, StatusPedido } from '../../domain/enums';
 import { ErroDeDominio, NaturezaErro, naoEncontrado } from '../../domain/erros';
+import { validarDataNascimento } from '../../domain/cliente/idade';
 import { mascararEmail, mascararTelefone } from '../../domain/lgpd/mascaramento';
 import { paraReais } from '../../domain/dinheiro';
 import { Consentimento, Pedido, TransacaoFidelidade, Unidade, Usuario } from '../../infrastructure/database/entidades';
@@ -23,7 +24,13 @@ export interface NovoCliente {
   email: string;
   senha: string;
   telefone?: string;
+  dataNascimento?: string;
   consentimentos?: { fidelidade?: boolean; marketing?: boolean };
+}
+
+export interface AtualizacaoDePerfil {
+  telefone?: string | null;
+  dataNascimento?: string | null;
 }
 
 export interface NovoFuncionario {
@@ -46,6 +53,7 @@ export class UsuariosService {
   ) {}
 
   async cadastrarCliente(dados: NovoCliente) {
+    if (dados.dataNascimento) this.validarDataParaSegmentacao(dados.dataNascimento, dados.consentimentos?.marketing ?? false);
     const email = dados.email.trim().toLowerCase();
     const senhaHash = await this.hasher.gerar(dados.senha);
     return this.uow.executar(async (em) => {
@@ -56,6 +64,7 @@ export class UsuariosService {
           email,
           senhaHash,
           telefone: dados.telefone ?? null,
+          dataNascimento: dados.dataNascimento ?? null,
           perfil: Perfil.CLIENTE,
           unidadeId: null,
           versaoTermosAceita: VERSAO_TERMOS,
@@ -80,7 +89,7 @@ export class UsuariosService {
         entidade: 'Usuario',
         entidadeId: usuario.id,
         ator: { id: usuario.id, perfil: usuario.perfil, unidadeId: null },
-        detalhes: { email: mascararEmail(email), consentimentos: decisoes },
+        detalhes: { email: mascararEmail(email), consentimentos: decisoes, informouDataNascimento: Boolean(dados.dataNascimento) },
       });
       return this.visaoPublica(usuario);
     });
@@ -132,9 +141,52 @@ export class UsuariosService {
       ...this.visaoPublica(usuario),
       email: usuario.email,
       telefone: usuario.telefone,
+      dataNascimento: usuario.dataNascimento,
       versaoTermosAceita: usuario.versaoTermosAceita,
       consentimentos: await this.consentimentosVigentes(usuario.id),
     };
+  }
+
+  /**
+   * Atualização dos dados opcionais pelo próprio titular (LGPD, art. 18, III — correção).
+   * A data de nascimento só é aceita com consentimento MARKETING vigente e serve apenas para
+   * campanhas por faixa etária; enviar null apaga o dado.
+   */
+  async atualizarMeuPerfil(ator: Ator, dados: AtualizacaoDePerfil) {
+    if (dados.dataNascimento) {
+      const consentiu = await this.fidelidade.temConsentimento(ator.id, FinalidadeConsentimento.MARKETING);
+      this.validarDataParaSegmentacao(dados.dataNascimento, consentiu);
+    }
+    const alteracoes: Partial<Usuario> = {};
+    if (dados.telefone !== undefined) alteracoes.telefone = dados.telefone;
+    if (dados.dataNascimento !== undefined) alteracoes.dataNascimento = dados.dataNascimento;
+    if (Object.keys(alteracoes).length === 0) {
+      throw new ErroDeDominio(NaturezaErro.VALIDACAO, 'NADA_A_ATUALIZAR', 'Informe ao menos um campo: telefone ou dataNascimento.');
+    }
+    await this.uow.executar(async (em) => {
+      await em.update(Usuario, ator.id, alteracoes);
+      await this.auditoria.registrar(em, {
+        acao: AcaoAuditoria.DADOS_PESSOAIS_ATUALIZADOS,
+        entidade: 'Usuario',
+        entidadeId: ator.id,
+        ator,
+        // Só os NOMES dos campos alterados: o valor (dado pessoal) não vai para a trilha.
+        detalhes: { campos: Object.keys(alteracoes) },
+      });
+    });
+    return this.meuPerfil(ator);
+  }
+
+  private validarDataParaSegmentacao(dataNascimento: string, consentiuMarketing: boolean) {
+    if (!consentiuMarketing) {
+      throw new ErroDeDominio(
+        NaturezaErro.REGRA_DE_NEGOCIO,
+        'CONSENTIMENTO_MARKETING_AUSENTE',
+        'A data de nascimento só é usada para campanhas por faixa etária e exige o consentimento MARKETING.',
+        [{ field: 'dataNascimento', issue: 'Conceda o consentimento MARKETING ou não envie este campo' }],
+      );
+    }
+    validarDataNascimento(dataNascimento, this.relogio.agora());
   }
 
   /** Listagem administrativa com dados de contato MASCARADOS (minimização). */
@@ -172,6 +224,7 @@ export class UsuariosService {
       ...this.visaoPublica(usuario),
       email: usuario.email,
       telefone: usuario.telefone,
+      dataNascimento: usuario.dataNascimento,
       ativo: usuario.ativo,
       anonimizadoEm: usuario.anonimizadoEm,
       consentimentos: await this.consentimentosVigentes(id),
@@ -210,12 +263,23 @@ export class UsuariosService {
   async registrarConsentimento(ator: Ator, finalidade: FinalidadeConsentimento, concedido: boolean) {
     return this.uow.executar(async (em) => {
       await em.insert(Consentimento, { usuarioId: ator.id, finalidade, concedido, versaoTermo: VERSAO_TERMOS, origem: 'PREFERENCIAS' });
+      // Finalidade encerrada → dado deixa de ser necessário (LGPD, art. 15, III e art. 16): a data de nascimento é apagada.
+      let dataNascimentoApagada = false;
+      if (finalidade === FinalidadeConsentimento.MARKETING && !concedido) {
+        const resultado = await em
+          .createQueryBuilder()
+          .update(Usuario)
+          .set({ dataNascimento: null })
+          .where('id = :id AND data_nascimento IS NOT NULL', { id: ator.id })
+          .execute();
+        dataNascimentoApagada = (resultado.affected ?? 0) > 0;
+      }
       await this.auditoria.registrar(em, {
         acao: AcaoAuditoria.CONSENTIMENTO_ALTERADO,
         entidade: 'Usuario',
         entidadeId: ator.id,
         ator,
-        detalhes: { finalidade, concedido },
+        detalhes: { finalidade, concedido, dataNascimentoApagada },
       });
       return this.consentimentosVigentes(ator.id, em);
     });
@@ -239,6 +303,7 @@ export class UsuariosService {
         nome: usuario.nome,
         email: usuario.email,
         telefone: usuario.telefone,
+        dataNascimento: usuario.dataNascimento,
         perfil: usuario.perfil,
         versaoTermosAceita: usuario.versaoTermosAceita,
         termosAceitosEm: usuario.termosAceitosEm,
@@ -286,6 +351,7 @@ export class UsuariosService {
         nome: 'Titular anonimizado',
         email: `anonimizado+${ator.id}@raizes.invalid`,
         telefone: null,
+        dataNascimento: null,
         senhaHash: senhaAleatoria,
         ativo: false,
         anonimizadoEm: this.relogio.agora(),

@@ -40,6 +40,11 @@ export class CriarProdutoDto {
   @Max(12)
   mesFim?: number;
 
+  @ApiPropertyOptional({ example: true, description: 'true = só pode ser vendido em unidades com cozinha completa' })
+  @IsOptional()
+  @IsBoolean()
+  exigeCozinhaCompleta?: boolean;
+
   @ApiPropertyOptional({ example: true })
   @IsOptional()
   @IsBoolean()
@@ -59,6 +64,16 @@ export class ItemCardapioDto {
   @IsOptional()
   @IsBoolean()
   disponivel?: boolean;
+
+  @ApiPropertyOptional({
+    example: 'Versão cearense: acompanha queijo coalho na chapa',
+    nullable: true,
+    description: 'Variação regional da receita nesta unidade (null remove)',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(200, { message: 'variacaoRegional deve ter no máximo 200 caracteres' })
+  variacaoRegional?: string | null;
 }
 
 export class ListarProdutosQuery extends PaginacaoQuery {

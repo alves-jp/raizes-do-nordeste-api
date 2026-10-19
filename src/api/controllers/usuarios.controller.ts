@@ -1,11 +1,11 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, ParseEnumPipe, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, ParseEnumPipe, Patch, Post, Put, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { FinalidadeConsentimento, Perfil } from '../../domain/enums';
 import { ErroDeDominio, NaturezaErro } from '../../domain/erros';
 import { Ator } from '../../application/comum/ator';
 import { UsuariosService } from '../../application/usuarios/usuarios.service';
 import { ApiErros } from '../documentacao/swagger';
-import { CadastroClienteDto, CadastroFuncionarioDto, ConsentimentoDto, ListarUsuariosQuery } from '../dtos/usuarios.dto';
+import { AtualizarPerfilDto, CadastroClienteDto, CadastroFuncionarioDto, ConsentimentoDto, ListarUsuariosQuery } from '../dtos/usuarios.dto';
 import { IdPipe } from '../http/validacao';
 import { AtorAtual, Perfis, Publico } from '../seguranca/decoradores';
 
@@ -23,7 +23,8 @@ export class UsuariosController {
     summary: 'Cadastro de cliente (público)',
     description:
       'Cria uma conta CLIENTE. Exige aceite dos Termos/Política de Privacidade. Consentimentos de FIDELIDADE e MARKETING são opcionais, ' +
-      'independentes e registrados com versão do termo (prova do consentimento). Não coletamos CPF, endereço ou data de nascimento.',
+      'independentes e registrados com versão do termo (prova do consentimento). Não coletamos CPF nem endereço. ' +
+      'A data de nascimento é opcional e só é aceita com consentimento MARKETING (campanhas por faixa etária; maiores de 18 anos).',
   })
   @ApiCreatedResponse({ schema: { example: EXEMPLO_USUARIO } })
   @ApiErros(409, 422)
@@ -64,6 +65,7 @@ export class UsuariosController {
         ...EXEMPLO_USUARIO,
         email: 'carla.menezes@email.com',
         telefone: null,
+        dataNascimento: null,
         versaoTermosAceita: 'v1.0',
         consentimentos: [
           { finalidade: 'FIDELIDADE', concedido: true, versaoTermo: 'v1.0', registradoEm: '2026-10-17T15:00:00.000Z' },
@@ -77,6 +79,19 @@ export class UsuariosController {
     return this.usuarios.meuPerfil(ator);
   }
 
+  @Patch('me')
+  @Perfis(Perfil.CLIENTE)
+  @ApiOperation({
+    summary: 'Atualizar meus dados opcionais (telefone e data de nascimento)',
+    description:
+      'Correção de dados pelo titular (LGPD art. 18, III). dataNascimento exige consentimento MARKETING vigente e é usada só para ' +
+      'campanhas por faixa etária; revogar o MARKETING apaga a data automaticamente. A alteração é auditada sem registrar o valor.',
+  })
+  @ApiErros(401, 403, 422)
+  atualizarPerfil(@Body() dto: AtualizarPerfilDto, @AtorAtual() ator: Ator) {
+    return this.usuarios.atualizarMeuPerfil(ator, dto);
+  }
+
   @Get('me/consentimentos')
   @Perfis(Perfil.CLIENTE)
   @ApiOperation({ summary: 'Histórico completo dos meus consentimentos (concessões e revogações)' })
@@ -88,7 +103,11 @@ export class UsuariosController {
   @Put('me/consentimentos/:finalidade')
   @Perfis(Perfil.CLIENTE)
   @ApiParam({ name: 'finalidade', enum: FinalidadeConsentimento })
-  @ApiOperation({ summary: 'Conceder ou revogar um consentimento', description: 'Revogar FIDELIDADE interrompe o acúmulo de pontos; o histórico é preservado.' })
+  @ApiOperation({
+    summary: 'Conceder ou revogar um consentimento',
+    description:
+      'Revogar FIDELIDADE interrompe o acúmulo de pontos; revogar MARKETING encerra a segmentação e apaga a data de nascimento. O histórico é preservado.',
+  })
   @ApiErros(401, 403, 422)
   registrarConsentimento(
     @Param(
@@ -120,7 +139,7 @@ export class UsuariosController {
   @HttpCode(204)
   @ApiOperation({
     summary: 'Excluir minha conta (anonimização — LGPD art. 18, VI)',
-    description: 'Apaga nome, e-mail e telefone de forma irreversível e revoga consentimentos. Pedidos são mantidos sem identificação (obrigação fiscal). O token deixa de valer.',
+    description: 'Apaga nome, e-mail, telefone e data de nascimento de forma irreversível e revoga consentimentos. Pedidos são mantidos sem identificação (obrigação fiscal). O token deixa de valer.',
   })
   @ApiNoContentResponse({ description: 'Conta anonimizada' })
   @ApiErros(401, 403, 409)

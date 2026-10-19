@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { AcaoAuditoria, CanalPedido } from '../../domain/enums';
+import { AcaoAuditoria, CanalPedido, NivelFidelidade } from '../../domain/enums';
+import { campanhaEhSegmentada } from '../../domain/campanha/regras-campanha';
+import { IDADE_MINIMA_SEGMENTACAO } from '../../domain/cliente/idade';
 import { ErroDeDominio, NaturezaErro, naoEncontrado } from '../../domain/erros';
 import { paraCentavos, paraReais } from '../../domain/dinheiro';
 import { Campanha, Unidade } from '../../infrastructure/database/entidades';
@@ -20,6 +22,9 @@ export interface NovaCampanha {
   unidadeId?: number | null;
   canalPedido?: CanalPedido | null;
   valorMinimo?: number;
+  nivelMinimoFidelidade?: NivelFidelidade | null;
+  idadeMinima?: number | null;
+  idadeMaxima?: number | null;
 }
 
 @Injectable()
@@ -52,6 +57,17 @@ export class CampanhasService {
         { field: 'fim', issue: 'Deve ser maior que inicio' },
       ]);
     }
+    const { idadeMinima, idadeMaxima } = dados;
+    if (idadeMinima != null && idadeMinima < IDADE_MINIMA_SEGMENTACAO) {
+      throw new ErroDeDominio(NaturezaErro.VALIDACAO, 'SEGMENTACAO_NAO_PERMITIDA_PARA_MENORES', 'Campanhas por faixa etária só podem atingir maiores de idade.', [
+        { field: 'idadeMinima', issue: `Mínimo: ${IDADE_MINIMA_SEGMENTACAO}` },
+      ]);
+    }
+    if (idadeMaxima != null && idadeMaxima < (idadeMinima ?? IDADE_MINIMA_SEGMENTACAO)) {
+      throw new ErroDeDominio(NaturezaErro.VALIDACAO, 'FAIXA_ETARIA_INVALIDA', 'idadeMaxima deve ser maior ou igual a idadeMinima (e a 18).', [
+        { field: 'idadeMaxima', issue: 'Faixa etária inválida' },
+      ]);
+    }
     return this.uow.executar(async (em) => {
       if (await em.exists(Campanha, { where: { codigo } })) {
         throw new ErroDeDominio(NaturezaErro.CONFLITO, 'CAMPANHA_JA_EXISTE', `Já existe uma campanha com o código ${codigo}.`, [
@@ -71,6 +87,10 @@ export class CampanhasService {
           unidadeId: dados.unidadeId ?? null,
           canalPedido: dados.canalPedido ?? null,
           valorMinimoCentavos: paraCentavos(dados.valorMinimo ?? 0),
+          nivelMinimoFidelidade: dados.nivelMinimoFidelidade ?? null,
+          idadeMinima: idadeMinima ?? null,
+          // Faixa aberta para cima, mas sempre com piso de 18 anos quando há segmentação por idade.
+          idadeMaxima: idadeMaxima ?? null,
         }),
       );
       await this.auditoria.registrar(em, {
@@ -79,7 +99,7 @@ export class CampanhasService {
         entidadeId: campanha.id,
         ator,
         unidadeId: campanha.unidadeId,
-        detalhes: { codigo, percentualDesconto: campanha.percentualDesconto },
+        detalhes: { codigo, percentualDesconto: campanha.percentualDesconto, segmentada: campanhaEhSegmentada(campanha) },
       });
       return this.visao(campanha);
     });
@@ -96,6 +116,9 @@ export class CampanhasService {
       unidadeId: c.unidadeId,
       canalPedido: c.canalPedido,
       valorMinimo: paraReais(c.valorMinimoCentavos),
+      segmentacao: campanhaEhSegmentada(c)
+        ? { nivelMinimoFidelidade: c.nivelMinimoFidelidade, idadeMinima: c.idadeMinima, idadeMaxima: c.idadeMaxima, exigeConsentimentoMarketing: true }
+        : null,
       ativa: c.ativa,
     };
   }

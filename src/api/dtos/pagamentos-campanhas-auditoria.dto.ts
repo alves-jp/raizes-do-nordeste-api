@@ -1,7 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsDate, IsEnum, IsIn, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, Matches, Max, MaxLength, Min } from 'class-validator';
-import { AcaoAuditoria, CanalPedido, FormaPagamento } from '../../domain/enums';
+import { AcaoAuditoria, CanalPedido, FormaPagamento, NivelFidelidade } from '../../domain/enums';
 import { TOKENS_DE_TESTE } from '../../infrastructure/pagamento/gateway-pagamento-mock';
 import { listaDeValores, PaginacaoQuery } from './comum.dto';
 
@@ -76,6 +76,23 @@ export class CriarCampanhaDto {
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0)
   valorMinimo?: number;
+
+  @ApiPropertyOptional({ enum: NivelFidelidade, description: 'Segmentação: nível mínimo de fidelidade (exige consentimento MARKETING do cliente)' })
+  @IsOptional()
+  @IsEnum(NivelFidelidade, { message: `nivelMinimoFidelidade deve ser um de: ${listaDeValores(NivelFidelidade)}` })
+  nivelMinimoFidelidade?: NivelFidelidade;
+
+  @ApiPropertyOptional({ example: 18, minimum: 18, description: 'Segmentação por faixa etária (maiores de idade)' })
+  @IsOptional()
+  @IsInt({ message: 'idadeMinima deve ser inteiro' })
+  @Max(120)
+  idadeMinima?: number;
+
+  @ApiPropertyOptional({ example: 25, maximum: 120 })
+  @IsOptional()
+  @IsInt({ message: 'idadeMaxima deve ser inteiro' })
+  @Max(120)
+  idadeMaxima?: number;
 }
 
 export class ListarCampanhasQuery extends PaginacaoQuery {
