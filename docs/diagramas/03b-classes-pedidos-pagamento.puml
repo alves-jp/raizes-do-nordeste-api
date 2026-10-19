@@ -73,6 +73,11 @@ package "Enumerações" {
     PICKUP
     WEB
   }
+  enum NivelFidelidade {
+    BRONZE
+    PRATA
+    OURO
+  }
   enum StatusPedido {
     AGUARDANDO_PAGAMENTO
     PAGAMENTO_RECUSADO
@@ -97,7 +102,10 @@ package "Fidelidade, campanhas e auditoria" {
     fim : Date
     canalPedido : CanalPedido
     valorMinimoCentavos : int
-    + calcularDesconto(contexto) : int
+    nivelMinimoFidelidade : NivelFidelidade
+    idadeMinima : int
+    idadeMaxima : int
+    + calcularDesconto(contexto, perfilCliente) : int
   }
   class LogAuditoria {
     acao : AcaoAuditoria
@@ -115,6 +123,7 @@ Pedido "1" *-- "1..*" ItemPedido
 ItemPedido "0..*" --> "1" Produto
 Pedido "1" -- "0..*" Pagamento : tentativas >
 Pagamento ..> GatewayDePagamento : solicitado via >
+Campanha ..> NivelFidelidade : segmenta por >
 GatewayDePagamento <|.. GatewayDePagamentoMock
 Pedido "0..*" --> "0..1" Campanha
 Usuario "1" -- "0..*" TransacaoFidelidade : extrato >

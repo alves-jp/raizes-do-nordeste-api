@@ -1,0 +1,3 @@
+# SVGs gerados pelo PlantUML contêm \r: tratados como binários para diffs e patches estáveis
+*.svg binary
+*.png binary

@@ -105,7 +105,7 @@
     },
     "/usuarios": {
       "post": {
-        "description": "Cria uma conta CLIENTE. Exige aceite dos Termos/Política de Privacidade. Consentimentos de FIDELIDADE e MARKETING são opcionais, independentes e registrados com versão do termo (prova do consentimento). Não coletamos CPF, endereço ou data de nascimento.",
+        "description": "Cria uma conta CLIENTE. Exige aceite dos Termos/Política de Privacidade. Consentimentos de FIDELIDADE e MARKETING são opcionais, independentes e registrados com versão do termo (prova do consentimento). Não coletamos CPF nem endereço. A data de nascimento é opcional e só é aceita com consentimento MARKETING (campanhas por faixa etária; maiores de 18 anos).",
         "operationId": "UsuariosController_cadastrar",
         "parameters": [],
         "requestBody": {
@@ -518,6 +518,7 @@
                     "criadoEm": "2026-10-17T15:00:00.000Z",
                     "email": "carla.menezes@email.com",
                     "telefone": null,
+                    "dataNascimento": null,
                     "versaoTermosAceita": "v1.0",
                     "consentimentos": [
                       {
@@ -567,8 +568,98 @@
           "Usuários e LGPD"
         ]
       },
+      "patch": {
+        "description": "Correção de dados pelo titular (LGPD art. 18, III). dataNascimento exige consentimento MARKETING vigente e é usada só para campanhas por faixa etária; revogar o MARKETING apaga a data automaticamente. A alteração é auditada sem registrar o valor.",
+        "operationId": "UsuariosController_atualizarPerfil",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AtualizarPerfilDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "401": {
+            "description": "Não autenticado (token ausente, inválido ou expirado)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "TOKEN_AUSENTE",
+                  "message": "Envie o token de acesso no header Authorization: Bearer <token>.",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Autenticado, mas sem permissão (perfil ou unidade)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "ACESSO_NEGADO",
+                  "message": "Seu perfil não tem permissão para esta operação.",
+                  "details": [
+                    {
+                      "field": "perfil",
+                      "issue": "Perfis autorizados: GERENTE, ADMIN"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Dados inválidos ou regra de negócio violada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "VALIDACAO",
+                  "message": "Um ou mais campos são inválidos.",
+                  "details": [
+                    {
+                      "field": "canalPedido",
+                      "issue": "canalPedido deve ser um de: APP, TOTEM, BALCAO, PICKUP, WEB"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Atualizar meus dados opcionais (telefone e data de nascimento)",
+        "tags": [
+          "Usuários e LGPD"
+        ]
+      },
       "delete": {
-        "description": "Apaga nome, e-mail e telefone de forma irreversível e revoga consentimentos. Pedidos são mantidos sem identificação (obrigação fiscal). O token deixa de valer.",
+        "description": "Apaga nome, e-mail, telefone e data de nascimento de forma irreversível e revoga consentimentos. Pedidos são mantidos sem identificação (obrigação fiscal). O token deixa de valer.",
         "operationId": "UsuariosController_anonimizar",
         "parameters": [],
         "responses": {
@@ -711,7 +802,7 @@
     },
     "/usuarios/me/consentimentos/{finalidade}": {
       "put": {
-        "description": "Revogar FIDELIDADE interrompe o acúmulo de pontos; o histórico é preservado.",
+        "description": "Revogar FIDELIDADE interrompe o acúmulo de pontos; revogar MARKETING encerra a segmentação e apaga a data de nascimento. O histórico é preservado.",
         "operationId": "UsuariosController_registrarConsentimento",
         "parameters": [
           {
@@ -1014,10 +1105,12 @@
                     "data": [
                       {
                         "id": 1,
-                        "nome": "Raízes do Nordeste — Salvador (Rio Vermelho)",
-                        "cidade": "Salvador",
-                        "uf": "BA",
+                        "nome": "Raízes do Nordeste — Recife (Casa Amarela)",
+                        "cidade": "Recife",
+                        "uf": "PE",
+                        "regiao": "NORDESTE",
                         "tipo": "PROPRIA",
+                        "formato": "COMPLETA",
                         "horarioFuncionamento": "07:00-22:00",
                         "ativa": true
                       }
@@ -1089,10 +1182,12 @@
                 "schema": {
                   "example": {
                     "id": 1,
-                    "nome": "Raízes do Nordeste — Salvador (Rio Vermelho)",
-                    "cidade": "Salvador",
-                    "uf": "BA",
+                    "nome": "Raízes do Nordeste — Recife (Casa Amarela)",
+                    "cidade": "Recife",
+                    "uf": "PE",
+                    "regiao": "NORDESTE",
                     "tipo": "PROPRIA",
+                    "formato": "COMPLETA",
                     "horarioFuncionamento": "07:00-22:00",
                     "ativa": true
                   }
@@ -1150,7 +1245,7 @@
     },
     "/unidades/{id}/cardapio": {
       "get": {
-        "description": "Preço local e disponibilidade em tempo real. Um item aparece indisponível quando: pausado pela unidade, produto inativo, fora de temporada (itens sazonais/juninos) ou sem estoque — o motivo vem em motivoIndisponibilidade.",
+        "description": "Preço local e disponibilidade em tempo real. Um item aparece indisponível quando: pausado pela unidade, produto inativo, fora de temporada (itens sazonais/juninos) ou sem estoque — o motivo vem em motivoIndisponibilidade. variacaoRegional descreve como a receita é feita naquela unidade (o produto continua padronizado pela matriz).",
         "operationId": "UnidadesController_cardapio",
         "parameters": [
           {
@@ -1220,17 +1315,19 @@
                   "example": {
                     "unidade": {
                       "id": 1,
-                      "nome": "Raízes do Nordeste — Salvador (Rio Vermelho)",
-                      "cidade": "Salvador",
-                      "uf": "BA"
+                      "nome": "Raízes do Nordeste — Recife (Casa Amarela)",
+                      "cidade": "Recife",
+                      "uf": "PE",
+                      "formato": "COMPLETA"
                     },
                     "data": [
                       {
-                        "produtoId": 1,
-                        "nome": "Tapioca de carne de sol com queijo coalho",
+                        "produtoId": 3,
+                        "nome": "Cuscuz nordestino com ovo",
                         "descricao": "...",
-                        "categoria": "TAPIOCAS",
-                        "preco": 24.9,
+                        "categoria": "CUSCUZ",
+                        "preco": 18.5,
+                        "variacaoRegional": "Receita original da casa: manteiga de garrafa e ovo estrelado",
                         "sazonal": false,
                         "disponivel": true,
                         "motivoIndisponibilidade": null
@@ -1241,6 +1338,7 @@
                         "descricao": "...",
                         "categoria": "DOCES",
                         "preco": 9.5,
+                        "variacaoRegional": null,
                         "sazonal": true,
                         "disponivel": false,
                         "motivoIndisponibilidade": "FORA_DE_TEMPORADA"
@@ -1330,7 +1428,7 @@
     },
     "/unidades/{id}/cardapio/{produtoId}": {
       "put": {
-        "description": "Define preço local e pausa/reativa o item. Operação idempotente e auditada.",
+        "description": "Define preço local, variação regional da receita e pausa/reativa o item. Operação idempotente e auditada. Produto que exige cozinha completa não entra no cardápio de unidade em formato REDUZIDA (422 PRODUTO_EXIGE_COZINHA_COMPLETA).",
         "operationId": "UnidadesController_definirItem",
         "parameters": [
           {
@@ -1371,7 +1469,8 @@
                     "produtoId": 1,
                     "nome": "Tapioca de carne de sol com queijo coalho",
                     "preco": 25.9,
-                    "disponivel": true
+                    "disponivel": true,
+                    "variacaoRegional": null
                   }
                 }
               }
@@ -1595,6 +1694,7 @@
                     "sazonal": false,
                     "mesInicio": null,
                     "mesFim": null,
+                    "exigeCozinhaCompleta": true,
                     "ativo": true
                   }
                 }
@@ -1762,6 +1862,7 @@
         ]
       },
       "patch": {
+        "description": "Marcar exigeCozinhaCompleta = true falha com 409 se o produto estiver no cardápio de alguma unidade em formato REDUZIDA.",
         "operationId": "ProdutosController_atualizar",
         "parameters": [
           {
@@ -3965,6 +4066,7 @@
     },
     "/fidelidade/saldo": {
       "get": {
+        "description": "O nível (BRONZE, PRATA, OURO) depende dos pedidos pagos nos últimos 90 dias e define o valor do ponto no resgate (desconto progressivo).",
         "operationId": "FidelidadeController_saldo",
         "parameters": [],
         "responses": {
@@ -3975,11 +4077,34 @@
                 "schema": {
                   "example": {
                     "saldo": 186,
-                    "saldoEmReais": 18.6,
+                    "saldoEmReais": 22.32,
                     "participando": true,
+                    "nivel": "PRATA",
+                    "pedidosPagosUltimos90Dias": 5,
+                    "valorDoPonto": 0.12,
+                    "proximoNivel": {
+                      "nivel": "OURO",
+                      "pedidosQueFaltam": 5
+                    },
                     "regras": {
                       "pontosPorReal": "1 ponto a cada R$ 2.00",
-                      "valorDoPonto": 0.1,
+                      "niveis": [
+                        {
+                          "nivel": "BRONZE",
+                          "pedidosPagosEm90Dias": 0,
+                          "valorDoPonto": 0.1
+                        },
+                        {
+                          "nivel": "PRATA",
+                          "pedidosPagosEm90Dias": 4,
+                          "valorDoPonto": 0.12
+                        },
+                        {
+                          "nivel": "OURO",
+                          "pedidosPagosEm90Dias": 10,
+                          "valorDoPonto": 0.15
+                        }
+                      ],
                       "resgateMinimo": 50,
                       "descontoMaximoPercentual": 30
                     }
@@ -4035,7 +4160,7 @@
             "bearer": []
           }
         ],
-        "summary": "Saldo de pontos e regras do programa \"Cliente Raiz\"",
+        "summary": "Saldo, nível e regras do programa \"Cliente Raiz\"",
         "tags": [
           "Fidelidade"
         ]
@@ -4386,6 +4511,344 @@
         ]
       }
     },
+    "/relatorios/vendas": {
+      "get": {
+        "description": "Pedidos pagos e cancelados, faturamento bruto, descontos de campanhas e de fidelidade, faturamento líquido, ticket médio, valor estornado e percentual da meta mensal da unidade. agruparPor=REGIAO consolida as unidades pelas regiões do IBGE. Período padrão: mês corrente. A consulta é registrada na auditoria.",
+        "operationId": "RelatoriosController_vendas",
+        "parameters": [
+          {
+            "name": "de",
+            "required": false,
+            "in": "query",
+            "description": "Início do período (padrão: 1º dia do mês corrente)",
+            "schema": {
+              "format": "date-time",
+              "example": "2026-10-01T00:00:00-03:00",
+              "type": "string"
+            }
+          },
+          {
+            "name": "ate",
+            "required": false,
+            "in": "query",
+            "description": "Fim do período (padrão: agora)",
+            "schema": {
+              "format": "date-time",
+              "example": "2026-10-31T23:59:59-03:00",
+              "type": "string"
+            }
+          },
+          {
+            "name": "unidadeId",
+            "required": false,
+            "in": "query",
+            "description": "Somente ADMIN escolhe a unidade; GERENTE é sempre restrito à própria",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "agruparPor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "UNIDADE",
+              "type": "string",
+              "enum": [
+                "UNIDADE",
+                "REGIAO"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "periodo": {
+                      "de": "2026-10-01T00:00:00.000Z",
+                      "ate": "2026-10-17T15:00:00.000Z"
+                    },
+                    "agruparPor": "UNIDADE",
+                    "escopo": "REDE",
+                    "grupos": [
+                      {
+                        "id": 1,
+                        "nome": "Raízes do Nordeste — Recife (Casa Amarela)",
+                        "cidade": "Recife",
+                        "uf": "PE",
+                        "regiao": "NORDESTE",
+                        "formato": "COMPLETA",
+                        "pedidosPagos": 3,
+                        "pedidosCancelados": 1,
+                        "faturamentoBruto": 132.7,
+                        "descontosCampanhas": 5.98,
+                        "descontosFidelidade": 5,
+                        "faturamentoLiquido": 121.72,
+                        "ticketMedio": 40.57,
+                        "valorEstornado": 24.9,
+                        "metaMensal": 90000,
+                        "percentualDaMeta": 0.1
+                      }
+                    ],
+                    "consolidado": {
+                      "pedidosPagos": 3,
+                      "pedidosCancelados": 1,
+                      "faturamentoBruto": 132.7,
+                      "descontosCampanhas": 5.98,
+                      "descontosFidelidade": 5,
+                      "faturamentoLiquido": 121.72,
+                      "ticketMedio": 40.57,
+                      "valorEstornado": 24.9
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autenticado (token ausente, inválido ou expirado)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "TOKEN_AUSENTE",
+                  "message": "Envie o token de acesso no header Authorization: Bearer <token>.",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Autenticado, mas sem permissão (perfil ou unidade)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "ACESSO_NEGADO",
+                  "message": "Seu perfil não tem permissão para esta operação.",
+                  "details": [
+                    {
+                      "field": "perfil",
+                      "issue": "Perfis autorizados: GERENTE, ADMIN"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Dados inválidos ou regra de negócio violada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "VALIDACAO",
+                  "message": "Um ou mais campos são inválidos.",
+                  "details": [
+                    {
+                      "field": "canalPedido",
+                      "issue": "canalPedido deve ser um de: APP, TOTEM, BALCAO, PICKUP, WEB"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Vendas e financeiro por unidade ou por região (GERENTE: própria unidade · ADMIN: rede)",
+        "tags": [
+          "Relatórios (matriz)"
+        ]
+      }
+    },
+    "/relatorios/produtos-mais-vendidos": {
+      "get": {
+        "description": "Quantidade vendida, número de pedidos, faturamento e participação de cada produto nos pedidos pagos do período.",
+        "operationId": "RelatoriosController_produtosMaisVendidos",
+        "parameters": [
+          {
+            "name": "de",
+            "required": false,
+            "in": "query",
+            "description": "Início do período (padrão: 1º dia do mês corrente)",
+            "schema": {
+              "format": "date-time",
+              "example": "2026-10-01T00:00:00-03:00",
+              "type": "string"
+            }
+          },
+          {
+            "name": "ate",
+            "required": false,
+            "in": "query",
+            "description": "Fim do período (padrão: agora)",
+            "schema": {
+              "format": "date-time",
+              "example": "2026-10-31T23:59:59-03:00",
+              "type": "string"
+            }
+          },
+          {
+            "name": "unidadeId",
+            "required": false,
+            "in": "query",
+            "description": "Somente ADMIN escolhe a unidade; GERENTE é sempre restrito à própria",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limite",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 50,
+              "default": 10,
+              "example": 10,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "example": {
+                    "periodo": {
+                      "de": "2026-10-01T00:00:00.000Z",
+                      "ate": "2026-10-17T15:00:00.000Z"
+                    },
+                    "escopo": "REDE",
+                    "produtos": [
+                      {
+                        "posicao": 1,
+                        "produtoId": 1,
+                        "nome": "Tapioca de carne de sol com queijo coalho",
+                        "quantidade": 5,
+                        "pedidos": 3,
+                        "faturamento": 124.5,
+                        "participacaoPercentual": 45.5
+                      },
+                      {
+                        "posicao": 2,
+                        "produtoId": 9,
+                        "nome": "Suco de cajá (500 ml)",
+                        "quantidade": 3,
+                        "pedidos": 3,
+                        "faturamento": 30,
+                        "participacaoPercentual": 27.3
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autenticado (token ausente, inválido ou expirado)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "TOKEN_AUSENTE",
+                  "message": "Envie o token de acesso no header Authorization: Bearer <token>.",
+                  "details": [],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Autenticado, mas sem permissão (perfil ou unidade)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "ACESSO_NEGADO",
+                  "message": "Seu perfil não tem permissão para esta operação.",
+                  "details": [
+                    {
+                      "field": "perfil",
+                      "issue": "Perfis autorizados: GERENTE, ADMIN"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Dados inválidos ou regra de negócio violada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErroPadraoDto"
+                },
+                "example": {
+                  "error": "VALIDACAO",
+                  "message": "Um ou mais campos são inválidos.",
+                  "details": [
+                    {
+                      "field": "canalPedido",
+                      "issue": "canalPedido deve ser um de: APP, TOTEM, BALCAO, PICKUP, WEB"
+                    }
+                  ],
+                  "timestamp": "2026-10-17T15:04:05.000Z",
+                  "path": "/...",
+                  "requestId": "9b2f7c1e-3a4d-4b1e-9f0a-1c2d3e4f5a6b"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Ranking de produtos mais consumidos (GERENTE: própria unidade · ADMIN: rede ou unidade)",
+        "tags": [
+          "Relatórios (matriz)"
+        ]
+      }
+    },
     "/auditoria": {
       "get": {
         "description": "ADMIN vê a rede inteira; GERENTE vê só a própria unidade. Ex.: ?acao=PEDIDO_CRIADO&entidadeId=1",
@@ -4428,12 +4891,14 @@
                 "CONSENTIMENTO_ALTERADO",
                 "DADOS_PESSOAIS_ACESSADOS",
                 "DADOS_PESSOAIS_EXPORTADOS",
+                "DADOS_PESSOAIS_ATUALIZADOS",
                 "USUARIO_ANONIMIZADO",
                 "PRODUTO_CRIADO",
                 "PRODUTO_ATUALIZADO",
                 "CARDAPIO_ATUALIZADO",
                 "ESTOQUE_MOVIMENTADO",
                 "CAMPANHA_CRIADA",
+                "RELATORIO_CONSULTADO",
                 "PEDIDO_CRIADO",
                 "PEDIDO_STATUS_ALTERADO",
                 "PEDIDO_CANCELADO",
@@ -4623,7 +5088,7 @@
   },
   "info": {
     "title": "Raízes do Nordeste API",
-    "description": "\nAPI Back-end da **Rede Raízes do Nordeste** — plataforma única de pedidos para os canais **APP, TOTEM, BALCÃO, PICKUP e WEB**,\ncom cardápio e estoque por unidade, pagamento via provedor externo (simulado), programa de fidelidade \"Cliente Raiz\" e controles de LGPD.\n\n### Como autenticar\n1. `POST /auth/login` com um dos usuários de teste abaixo.\n2. Clique em **Authorize** e cole o `accessToken`.\n\n| Perfil | E-mail | Senha |\n|---|---|---|\n| ADMIN (matriz) | admin@raizesdonordeste.com.br | Raizes@2026 |\n| GERENTE — Salvador | gerente.salvador@raizesdonordeste.com.br | Raizes@2026 |\n| ATENDENTE — Salvador | atendente.salvador@raizesdonordeste.com.br | Raizes@2026 |\n| COZINHA — Salvador | cozinha.salvador@raizesdonordeste.com.br | Raizes@2026 |\n| TOTEM — Salvador | totem01.salvador@raizesdonordeste.com.br | Raizes@2026 |\n| GERENTE — Recife | gerente.recife@raizesdonordeste.com.br | Raizes@2026 |\n| CLIENTE (participa da fidelidade) | ana.souza@email.com | Raizes@2026 |\n| CLIENTE (não participa) | bruno.costa@email.com | Raizes@2026 |\n\n### Fluxo crítico\n`POST /pedidos` → `POST /pagamentos` → `PATCH /pedidos/{id}/status` (EM_PREPARO → PRONTO → ENTREGUE)\n\n### Padrão de erro (todas as rotas)\n```json\n{ \"error\": \"CODIGO\", \"message\": \"Mensagem legível\", \"details\": [{ \"field\": \"campo\", \"issue\": \"problema\" }],\n  \"timestamp\": \"2026-10-17T15:04:05.000Z\", \"path\": \"/rota\", \"requestId\": \"uuid\" }\n```\n400 malformado · 401 sem token · 402 pagamento recusado · 403 sem permissão · 404 não encontrado · 409 conflito/regra · 422 validação · 429 limite · 503 provedor indisponível\n",
+    "description": "\nAPI Back-end da **Rede Raízes do Nordeste** — plataforma única de pedidos para os canais **APP, TOTEM, BALCÃO, PICKUP e WEB**,\ncom cardápio e estoque por unidade, pagamento via provedor externo (simulado), programa de fidelidade \"Cliente Raiz\" e controles de LGPD.\n\n### Como autenticar\n1. `POST /auth/login` com um dos usuários de teste abaixo.\n2. Clique em **Authorize** e cole o `accessToken`.\n\n| Perfil | E-mail | Senha |\n|---|---|---|\n| ADMIN (matriz) | admin@raizesdonordeste.com.br | Raizes@2026 |\n| GERENTE — Recife | gerente.recife@raizesdonordeste.com.br | Raizes@2026 |\n| ATENDENTE — Recife | atendente.recife@raizesdonordeste.com.br | Raizes@2026 |\n| COZINHA — Recife | cozinha.recife@raizesdonordeste.com.br | Raizes@2026 |\n| TOTEM — Recife | totem01.recife@raizesdonordeste.com.br | Raizes@2026 |\n| GERENTE — Fortaleza | gerente.fortaleza@raizesdonordeste.com.br | Raizes@2026 |\n| CLIENTE (participa da fidelidade) | ana.souza@email.com | Raizes@2026 |\n| CLIENTE (não participa) | bruno.costa@email.com | Raizes@2026 |\n\n### Fluxo crítico\n`POST /pedidos` → `POST /pagamentos` → `PATCH /pedidos/{id}/status` (EM_PREPARO → PRONTO → ENTREGUE)\n\n### Padrão de erro (todas as rotas)\n```json\n{ \"error\": \"CODIGO\", \"message\": \"Mensagem legível\", \"details\": [{ \"field\": \"campo\", \"issue\": \"problema\" }],\n  \"timestamp\": \"2026-10-17T15:04:05.000Z\", \"path\": \"/rota\", \"requestId\": \"uuid\" }\n```\n400 malformado · 401 sem token · 402 pagamento recusado · 403 sem permissão · 404 não encontrado · 409 conflito/regra · 422 validação · 429 limite · 503 provedor indisponível\n",
     "version": "1.0.0",
     "contact": {}
   },
@@ -4751,8 +5216,13 @@
           },
           "telefone": {
             "type": "string",
-            "example": "(71) 98888-7777",
+            "example": "(81) 98888-7777",
             "description": "Opcional — usado apenas para avisar que o pedido está pronto"
+          },
+          "dataNascimento": {
+            "type": "string",
+            "example": "1998-04-23",
+            "description": "Opcional (AAAA-MM-DD). Só é aceita com consentimentos.marketing = true e serve apenas para campanhas por faixa etária. Maiores de 18 anos."
           },
           "aceiteTermos": {
             "type": "boolean",
@@ -4815,6 +5285,23 @@
           "perfil"
         ]
       },
+      "AtualizarPerfilDto": {
+        "type": "object",
+        "properties": {
+          "telefone": {
+            "type": "object",
+            "example": "(81) 98888-7777",
+            "nullable": true,
+            "description": "null remove o telefone"
+          },
+          "dataNascimento": {
+            "type": "object",
+            "example": "1998-04-23",
+            "nullable": true,
+            "description": "AAAA-MM-DD; exige consentimento MARKETING vigente; null apaga o dado"
+          }
+        }
+      },
       "ConsentimentoDto": {
         "type": "object",
         "properties": {
@@ -4840,6 +5327,12 @@
             "type": "boolean",
             "example": true,
             "description": "false pausa o item no cardápio desta unidade"
+          },
+          "variacaoRegional": {
+            "type": "object",
+            "example": "Versão cearense: acompanha queijo coalho na chapa",
+            "nullable": true,
+            "description": "Variação regional da receita nesta unidade (null remove)"
           }
         },
         "required": [
@@ -4885,6 +5378,11 @@
             "example": 7,
             "minimum": 1,
             "maximum": 12
+          },
+          "exigeCozinhaCompleta": {
+            "type": "boolean",
+            "example": true,
+            "description": "true = só pode ser vendido em unidades com cozinha completa"
           },
           "ativo": {
             "type": "boolean",
@@ -4935,6 +5433,11 @@
             "example": 7,
             "minimum": 1,
             "maximum": 12
+          },
+          "exigeCozinhaCompleta": {
+            "type": "boolean",
+            "example": true,
+            "description": "true = só pode ser vendido em unidades com cozinha completa"
           },
           "ativo": {
             "type": "boolean",
@@ -5183,6 +5686,26 @@
             "type": "number",
             "example": 30,
             "description": "Valor mínimo do pedido em reais"
+          },
+          "nivelMinimoFidelidade": {
+            "type": "string",
+            "enum": [
+              "BRONZE",
+              "PRATA",
+              "OURO"
+            ],
+            "description": "Segmentação: nível mínimo de fidelidade (exige consentimento MARKETING do cliente)"
+          },
+          "idadeMinima": {
+            "type": "number",
+            "example": 18,
+            "minimum": 18,
+            "description": "Segmentação por faixa etária (maiores de idade)"
+          },
+          "idadeMaxima": {
+            "type": "number",
+            "example": 25,
+            "maximum": 120
           }
         },
         "required": [

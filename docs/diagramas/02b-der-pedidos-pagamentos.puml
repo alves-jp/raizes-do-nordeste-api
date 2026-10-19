@@ -27,6 +27,8 @@ entity "usuarios" as usuarios {
   * email : VARCHAR(160) <<UNIQUE>>
   * senha_hash : VARCHAR(100) (bcrypt)
   telefone : VARCHAR(20)
+  data_nascimento : VARCHAR(10) (opcional,
+    só com consentimento MARKETING)
   * perfil : CLIENTE | ATENDENTE | COZINHA
     | GERENTE | ADMIN | TOTEM
   unidade_id : INTEGER <<FK>>

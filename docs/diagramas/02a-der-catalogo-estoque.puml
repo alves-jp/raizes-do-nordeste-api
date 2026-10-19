@@ -27,6 +27,8 @@ entity "unidades" as unidades {
   * cidade : VARCHAR(80)
   * uf : VARCHAR(2)
   * tipo : PROPRIA | FRANQUIA
+  * formato : COMPLETA | REDUZIDA
+  meta_mensal_centavos : INTEGER
   horario_funcionamento : VARCHAR(20)
   * ativa : BOOLEAN
   * criado_em : DATETIME
@@ -42,6 +44,7 @@ entity "produtos" as produtos {
   * sazonal : BOOLEAN
   mes_inicio : INTEGER (1–12)
   mes_fim : INTEGER (1–12)
+  * exige_cozinha_completa : BOOLEAN
   * ativo : BOOLEAN
   <<CHECK sazonal = 0 OR meses 1–12>>
 }
@@ -53,6 +56,7 @@ entity "itens_cardapio" as cardapio {
   * produto_id : INTEGER <<FK>>
   * preco_centavos : INTEGER <<CHECK > 0>>
   * disponivel : BOOLEAN
+  variacao_regional : VARCHAR(200)
   <<UNIQUE (unidade_id, produto_id)>>
 }
 
@@ -93,6 +97,8 @@ entity "campanhas" as campanhas {
   canal_pedido : APP | TOTEM | BALCAO
     | PICKUP | WEB
   * valor_minimo_centavos : INTEGER
+  nivel_minimo_fidelidade : BRONZE | PRATA | OURO
+  idade_minima, idade_maxima : INTEGER
   * ativa : BOOLEAN
 }
 

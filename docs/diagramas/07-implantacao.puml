@@ -1,0 +1,77 @@
+@startuml 07-implantacao
+' Diagrama de implantação PROPOSTO para produção (alta disponibilidade e escala).
+' O MVP entregue roda como uma instância com SQLite; os mesmos módulos sobem nesta topologia
+' trocando apenas configuração (PostgreSQL, Redis, fila) — o código de domínio não muda.
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam ArrowColor #5A3E2B
+skinparam nodesep 30
+skinparam ranksep 45
+skinparam node {
+  BorderColor #5A3E2B
+  BackgroundColor #FFFDF8
+}
+skinparam database {
+  BorderColor #5A3E2B
+  BackgroundColor #FFF8EC
+}
+skinparam queue {
+  BorderColor #5A3E2B
+  BackgroundColor #FFF8EC
+}
+skinparam cloud {
+  BorderColor #9A9A9A
+  BackgroundColor #F2F2F2
+}
+skinparam rectangle {
+  BorderColor #B5651D
+}
+
+rectangle "Canais (lojas e clientes)" {
+  node "App\n(iOS / Android)" as App
+  node "Totens\n(por loja)" as Totem
+  node "Web /\nPick-up" as Web
+  node "Balcão\n(PDV)" as Balcao
+}
+
+node "CDN + WAF + API Gateway\nTLS · rate limit · bloqueio de abuso" as Borda
+node "Balanceador de carga\n(health check em /health)" as LB
+
+rectangle "Cluster da API — instâncias stateless (JWT)\nautoescala por CPU e latência p99 · 2 zonas de disponibilidade" as Cluster #FFF3E0 {
+  node "API NestJS\ninstância 1" as API1
+  node "API NestJS\ninstância 2" as API2
+  node "API NestJS\ninstância N" as APIN
+}
+
+database "PostgreSQL primário\n(escritas · failover automático)" as PG
+database "Réplica de leitura\n(relatórios da matriz)" as Replica
+database "Redis\ncache de cardápio · limites" as Redis
+queue "Fila de eventos\n(PedidoPago, Cancelado…)" as Fila
+node "Workers\nnotificações · BI · conciliação" as Workers
+cloud "Provedor de pagamento\n«sistema externo»" as PSP
+node "Observabilidade\nlogs com requestId · métricas · alertas" as Obs
+
+App -down-> Borda : HTTPS
+Totem -down-> Borda : HTTPS
+Web -down-> Borda : HTTPS
+Balcao -down-> Borda : HTTPS
+Borda -down-> LB
+LB -down-> API1
+LB -down-> API2
+LB -down-> APIN
+
+API1 -down-> PG : transações
+API2 -down-> PG
+APIN -down-> PG
+API2 -down-> Replica : consultas\nde relatórios
+API1 -down-> Redis
+APIN -down-> Fila : outbox
+PG -right-> Replica : replicação
+Fila -down-> Workers
+API1 -[hidden]right- API2
+API2 -[hidden]right- APIN
+APIN -right-> PSP : cobrança/estorno\ntimeout + retry\nidempotência
+PSP ..> APIN : webhook\n(proposto)
+Obs <.right. API1 : logs e\nmétricas
+@enduml

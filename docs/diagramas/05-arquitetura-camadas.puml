@@ -15,11 +15,11 @@ skinparam actor {
 
 actor "Clientes da API\nApp · Totem · Web · Balcão" as Clientes
 
-rectangle "**API (Interface)** — src/api\n\nControllers REST: /auth /usuarios /unidades /produtos /estoque\n/pedidos /pagamentos /fidelidade /campanhas /auditoria /health\nAutenticacaoGuard (JWT + perfis) · DTOs + ValidationPipe (422)\nFiltroDeErros (JSON padrão) · ContextoMiddleware (requestId) · Swagger (/docs)" as API #FFF3E0
+rectangle "**API (Interface)** — src/api\n\nControllers REST: /auth /usuarios /unidades /produtos /estoque\n/pedidos /pagamentos /fidelidade /campanhas /relatorios /auditoria /health\nAutenticacaoGuard (JWT + perfis) · DTOs + ValidationPipe (422)\nFiltroDeErros (JSON padrão) · ContextoMiddleware (requestId) · Swagger (/docs)" as API #FFF3E0
 
-rectangle "**Application (Casos de uso)** — src/application\n\nPedidosService · PagamentosService (+ timeout/retry) · EstoqueService\nFidelidadeService · UsuariosService (LGPD) · CatalogoService\nCampanhasService · AuthService · AuditoriaService\nPorta: GatewayDePagamento (interface)" as APP #FFF8EC
+rectangle "**Application (Casos de uso)** — src/application\n\nPedidosService · PagamentosService (+ timeout/retry) · EstoqueService\nFidelidadeService · UsuariosService (LGPD) · CatalogoService\nCampanhasService · RelatoriosService · AuthService · AuditoriaService\nPorta: GatewayDePagamento (interface)" as APP #FFF8EC
 
-rectangle "**Domain (Regras de negócio puras)** — src/domain\n\nMáquina de status do pedido · Canal × perfil (multicanalidade)\nCálculo do pedido · Regras de fidelidade e campanhas\nSazonalidade · Mascaramento LGPD · Enums · ErroDeDominio\n(sem dependência de framework, HTTP ou banco)" as DOM #FFFDF8
+rectangle "**Domain (Regras de negócio puras)** — src/domain\n\nMáquina de status do pedido · Canal × perfil (multicanalidade)\nCálculo do pedido · Fidelidade por níveis · Campanhas segmentadas\nFormato da unidade e regiões · Sazonalidade · Idade e mascaramento (LGPD)\nEnums · ErroDeDominio\n(sem dependência de framework, HTTP ou banco)" as DOM #FFFDF8
 
 rectangle "**Infrastructure (Detalhes técnicos)** — src/infrastructure\n\nEntidades TypeORM · Migrations · Seed · UnidadeDeTrabalho (transações)\nGatewayDePagamentoMock (RaizesPay Sandbox) · Hash bcrypt\nLimitador de login · Contexto da requisição · Configuração (.env)" as INF #F7EFE6
 
